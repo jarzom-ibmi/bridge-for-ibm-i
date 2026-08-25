@@ -6,6 +6,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Changed
+- `release.mjs`: clear guidance instead of a stack trace when a git step or the
+  push fails (everything before the push is rolled back), `--help`, `vX.Y.Z`
+  accepted, README version bump limited to the exact patterns the docs check
+  watches, and a narrower, rate-limit-friendly GitHub Actions lookup.
+
 ## [0.9.2] - 2026-08-25
 
 ### Added
