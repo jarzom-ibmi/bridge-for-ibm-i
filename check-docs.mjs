@@ -29,7 +29,7 @@ const heads = [...man.matchAll(/\*\*Version ([\d.]+) ·/g)].map(m => m[1]);
 must(heads.length === 2 && heads.every(v => v === V), `MANUAL.md: version i overskrifterne er ${heads} - skal være ${V} begge steder`);
 must(readFileSync("README.md","utf8").includes(`# ${NAME}`), `README.md: overskriften matcher ikke visningsnavnet "${NAME}"`);
 const manual = readFileSync("MANUAL.md","utf8");
-for (const key of ["cmd.pullNode","cmd.pull"])
+for (const key of ["cmd.pullNode","cmd.pull","cmd.openManual"])
   for (const [lang, nls] of [["EN", NLS_EN], ["DA", NLS_DA]])
     must(manual.includes(nls[key]), `MANUAL.md: mangler den faktiske ${lang}-titel "${nls[key]}" - dokumentet citerer ikke UI'en korrekt`);
 const lic = readFileSync("LICENSE", "utf8");

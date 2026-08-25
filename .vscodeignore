@@ -1,5 +1,4 @@
 .git*
-MANUAL.md
 *.vsix
 *.zip
 icon.svg

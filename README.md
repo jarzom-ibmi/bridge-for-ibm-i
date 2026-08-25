@@ -43,7 +43,7 @@ when VS Code's display language is Danish.
 Requires VS Code with Code for IBM i installed and connected.
 
 ```bash
-code --install-extension bridge-for-i-0.8.2.vsix
+code --install-extension bridge-for-i-0.9.0.vsix
 ```
 > **Upgrading from Claude Member Bridge (≤ 0.4.1)?** Uninstall it first — the
 > rename changed the extension ID, and two bridges watching the same mirror
@@ -52,8 +52,13 @@ code --install-extension bridge-for-i-0.8.2.vsix
 
 Or in VS Code: Extensions panel → the "…" menu → *Install from VSIX…*. Reload
 the window and verify in **View → Output → "IBM i Bridge"** that the first line
-reads `Bridge for IBM i v0.8.2 active.` Optionally set
+reads `Bridge for IBM i v0.9.0 active.` Optionally set
 `bridgeForI.targetLibrary` in Settings.
+
+The full guide ships with the extension: run **IBM i Bridge: Open manual**
+from the Command Palette (Ctrl+Shift+P), or read
+[MANUAL.md](https://github.com/jarzom-ibmi/bridge-for-ibm-i/blob/main/MANUAL.md)
+on GitHub.
 
 To rebuild the .vsix from source:
 
@@ -149,7 +154,7 @@ når VS Codes visningssprog er dansk.
 Kræver VS Code med Code for IBM i installeret og forbundet.
 
 ```bash
-code --install-extension bridge-for-i-0.8.2.vsix
+code --install-extension bridge-for-i-0.9.0.vsix
 ```
 > **Opgraderer du fra Claude Member Bridge (≤ 0.4.1)?** Afinstallér den først —
 > omdøbningen ændrede extension-ID'et, og to broer på samme spejl ville uploade
@@ -158,8 +163,13 @@ code --install-extension bridge-for-i-0.8.2.vsix
 
 Eller i VS Code: Extensions-panelet → "…"-menuen → *Install from VSIX…*.
 Genindlæs vinduet og tjek i **View → Output → "IBM i Bridge"** at første linje
-siger `Bridge for IBM i v0.8.2 aktiv.` Sæt evt. `bridgeForI.targetLibrary`
+siger `Bridge for IBM i v0.9.0 aktiv.` Sæt evt. `bridgeForI.targetLibrary`
 i Settings.
+
+Den fulde vejledning følger med extensionen: kør **IBM i Bridge: Åbn vejledning**
+fra Command Palette (Ctrl+Shift+P), eller læs
+[MANUAL.md](https://github.com/jarzom-ibmi/bridge-for-ibm-i/blob/main/MANUAL.md)
+på GitHub.
 
 ## Arbejdsgang
 

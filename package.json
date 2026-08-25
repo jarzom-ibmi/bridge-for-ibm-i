@@ -2,7 +2,7 @@
   "name": "bridge-for-i",
   "displayName": "%ext.displayName%",
   "description": "%ext.description%",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "publisher": "local",
   "license": "MIT",
   "repository": {
@@ -51,6 +51,11 @@
       {
         "command": "bridgeForI.pullCurrent",
         "title": "%cmd.pullCurrent%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.openManual",
+        "title": "%cmd.openManual%",
         "category": "IBM i Bridge"
       }
     ],

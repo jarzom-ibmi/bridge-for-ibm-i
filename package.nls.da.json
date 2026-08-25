@@ -10,5 +10,6 @@
   "cfg.mirrorFolder": "Mappe i workspacet hvor members spejles",
   "cfg.autoUpload": "Upload automatisk til IBM i når en spejlet fil ændres",
   "cmd.pullCurrent": "Hent aktuel fil igen (overskriv lokal)",
+  "cmd.openManual": "Åbn vejledning",
   "cfg.conflictCheck": "Advar før upload, hvis memberet er ændret på IBM i'en siden dit seneste pull/upload"
 }

@@ -6,9 +6,12 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.9.0] - 2026-08-25
 
 ### Added
+- Command **Open manual** (Danish: *Åbn vejledning*) opens `MANUAL.md` in a
+  Markdown preview tab inside VS Code; on a Danish UI it jumps straight to the
+  Danish section. `MANUAL.md` is now included in the `.vsix`.
 - Source code published on GitHub: https://github.com/jarzom-ibmi/bridge-for-ibm-i
   (`repository`, `homepage` and `bugs` fields in the manifest).
 

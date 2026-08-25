@@ -1,6 +1,6 @@
 # Bridge for IBM i — Complete Guide
 
-**Version 0.8.2 · Author: Glenn Jarzomkowski · License: MIT**
+**Version 0.9.0 · Author: Glenn Jarzomkowski · License: MIT**
 
 *Dansk udgave følger efter den engelske.*
 
@@ -59,11 +59,11 @@ Key properties:
 
 ## 3. Installation
 
-1. Get `bridge-for-i-0.8.2.vsix`.
+1. Get `bridge-for-i-0.9.0.vsix`.
 2. Install it — either from the command line:
 
    ```bash
-   code --install-extension bridge-for-i-0.8.2.vsix
+   code --install-extension bridge-for-i-0.9.0.vsix
    ```
 > **Upgrading from Claude Member Bridge (≤ 0.4.1)?** Uninstall it first — the
 > rename changed the extension ID, and two bridges watching the same mirror
@@ -73,7 +73,7 @@ Key properties:
    or in VS Code: **Extensions panel → "…" menu → Install from VSIX…**
 3. Reload the window (**Developer: Reload Window**).
 4. Verify: **View → Output → "IBM i Bridge"** — the first line must read
-   `Bridge for IBM i v0.8.2 active.`
+   `Bridge for IBM i v0.9.0 active.`
 5. Recommended: **Settings → search "claude member bridge" → Target Library**
    = the library you compile into (e.g. `MYLIB`).
 
@@ -127,6 +127,7 @@ version control — git on the mirror is your history and your undo.
 | IBM i Bridge: Compile current file on IBM i | Save + upload + correct CRT command |
 | IBM i Bridge: Upload current file to IBM i | Manual upload; also a diagnostic |
 | IBM i Bridge: Pull current file again | Re-download the member, overwriting the local file |
+| IBM i Bridge: Open manual | Opens this guide in a Markdown preview tab |
 
 Compile picks the command from the file extension: RPGLE→CRTBNDRPG,
 SQLRPGLE→CRTSQLRPGI, RPG→CRTRPGPGM, CLLE→CRTBNDCL, CLP/CL→CRTCLPGM,
@@ -172,7 +173,7 @@ Everything starts in **View → Output → "IBM i Bridge"**.
 
 | Symptom | Look for / cause |
 |---|---|
-| Nothing happens on Ctrl+S | Is the first log line v0.8.2? Older versions lacked the save hook. |
+| Nothing happens on Ctrl+S | Is the first log line v0.9.0? Older versions lacked the save hook. |
 | `(save) REJECTED …: wrong depth` | Path must be exactly `ibmi/LIB/SRCFILE/NAME.ext` — three levels |
 | `…not located under any ibmi/ folder` | File saved outside the mirror, or `mirrorFolder` setting differs |
 | `Code for IBM i is not connected` | Connect first; the bridge reuses that connection |
@@ -198,7 +199,7 @@ Everything starts in **View → Output → "IBM i Bridge"**.
 
 # Bridge for IBM i — Komplet vejledning (dansk)
 
-**Version 0.8.2 · Forfatter: Glenn Jarzomkowski · Licens: MIT**
+**Version 0.9.0 · Forfatter: Glenn Jarzomkowski · Licens: MIT**
 
 ## 1. Hvad er det
 
@@ -252,11 +253,11 @@ Nøgleegenskaber:
 
 ## 3. Installation
 
-1. Hent `bridge-for-i-0.8.2.vsix`.
+1. Hent `bridge-for-i-0.9.0.vsix`.
 2. Installér — enten fra kommandolinjen:
 
    ```bash
-   code --install-extension bridge-for-i-0.8.2.vsix
+   code --install-extension bridge-for-i-0.9.0.vsix
    ```
 > **Opgraderer du fra Claude Member Bridge (≤ 0.4.1)?** Afinstallér den først —
 > omdøbningen ændrede extension-ID'et, og to broer på samme spejl ville uploade
@@ -266,7 +267,7 @@ Nøgleegenskaber:
    eller i VS Code: **Extensions-panelet → "…"-menuen → Install from VSIX…**
 3. Genindlæs vinduet (**Developer: Reload Window**).
 4. Verificér: **View → Output → "IBM i Bridge"** — første linje skal sige
-   `Bridge for IBM i v0.8.2 aktiv.`
+   `Bridge for IBM i v0.9.0 aktiv.`
 5. Anbefalet: **Settings → søg "claude member bridge" → Target Library**
    = biblioteket du kompilerer til (fx `MINLIB`).
 
@@ -318,6 +319,7 @@ versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 | IBM i Bridge: Kompilér aktuel fil på IBM i | Gem + upload + korrekt CRT-kommando |
 | IBM i Bridge: Upload aktuel fil til IBM i | Manuel upload; også diagnose |
 | IBM i Bridge: Hent aktuel fil igen | Genhenter memberet og overskriver den lokale fil |
+| IBM i Bridge: Åbn vejledning | Åbner denne vejledning i en Markdown-preview-fane |
 
 Compile vælger kommando ud fra filendelsen: RPGLE→CRTBNDRPG,
 SQLRPGLE→CRTSQLRPGI, RPG→CRTRPGPGM, CLLE→CRTBNDCL, CLP/CL→CRTCLPGM,
@@ -363,7 +365,7 @@ Alt starter i **View → Output → "IBM i Bridge"**.
 
 | Symptom | Kig efter / årsag |
 |---|---|
-| Intet sker ved Ctrl+S | Siger første loglinje v0.8.2? Ældre versioner manglede gem-lytteren. |
+| Intet sker ved Ctrl+S | Siger første loglinje v0.9.0? Ældre versioner manglede gem-lytteren. |
 | `(gem) AFVIST …: forkert dybde` | Stien skal være præcis `ibmi/LIB/KILDEFIL/NAVN.ext` — tre niveauer |
 | `…ligger ikke under nogen ibmi/-mappe` | Filen er gemt udenfor spejlet, eller `mirrorFolder` afviger |
 | `Code for IBM i er ikke forbundet` | Forbind først; broen genbruger den forbindelse |

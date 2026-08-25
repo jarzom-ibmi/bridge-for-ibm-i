@@ -10,5 +10,6 @@
   "cfg.mirrorFolder": "Workspace folder where members are mirrored",
   "cfg.autoUpload": "Automatically upload to IBM i when a mirrored file changes",
   "cmd.pullCurrent": "Pull current file again (overwrite local)",
+  "cmd.openManual": "Open manual",
   "cfg.conflictCheck": "Before uploading, warn if the member changed on the IBM i since your last pull/upload"
 }

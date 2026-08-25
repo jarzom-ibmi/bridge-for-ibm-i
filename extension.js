@@ -573,7 +573,7 @@ function activate(context) {
   for (const [k, v] of Object.entries(context.workspaceState.get("ibmiBridge.hashes", {})))
     lastUpload.set(k, v);
   out = vscode.window.createOutputChannel("IBM i Bridge");
-  log(L.active("v0.8.2"));
+  log(L.active("v0.9.0"));
 
   context.subscriptions.push(
     vscode.commands.registerCommand("bridgeForI.pull", async () => {
@@ -676,7 +676,23 @@ function activate(context) {
   statusItem.command = "bridgeForI.showOutput";
   context.subscriptions.push(
     statusItem,
-    vscode.commands.registerCommand("bridgeForI.showOutput", () => out.show(true))
+    vscode.commands.registerCommand("bridgeForI.showOutput", () => out.show(true)),
+
+    // Manualen (MANUAL.md pakkes med i .vsix'en) aabnes i VS Codes egen
+    // Markdown-preview. Den danske udgave ligger i samme fil - hop til dens
+    // overskrift, naar VS Code koerer paa dansk. Fallback: aabn som tekst.
+    vscode.commands.registerCommand("bridgeForI.openManual", async () => {
+      const base = vscode.Uri.joinPath(context.extensionUri, "MANUAL.md");
+      const uri = L === DA
+        ? base.with({ fragment: "bridge-for-ibm-i--komplet-vejledning-dansk" })
+        : base;
+      try {
+        await vscode.commands.executeCommand("markdown.showPreview", uri);
+      } catch (e) {
+        log(L.manualOpenFallback((e && e.message) || e));
+        await vscode.window.showTextDocument(base, { preview: true });
+      }
+    })
   );
   const instance = getInstance();
   if (instance && typeof instance.subscribe === "function") {
