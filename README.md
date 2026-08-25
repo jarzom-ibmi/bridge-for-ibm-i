@@ -92,7 +92,7 @@ files under `ibmi/` are yours and remain untouched.
 To rebuild the .vsix from source:
 
 ```bash
-npx --yes @vscode/vsce package
+npx --yes @vscode/vsce@3.9.2 package
 ```
 
 To publish a new version (maintainer): write the notes under
@@ -322,7 +322,7 @@ spejlede filer under `ibmi/` er dine og røres ikke.
 Sådan bygges .vsix'en fra kildekoden:
 
 ```bash
-npx --yes @vscode/vsce package
+npx --yes @vscode/vsce@3.9.2 package
 ```
 
 Ny version (vedligeholder): skriv noterne under `## [Unreleased]` i

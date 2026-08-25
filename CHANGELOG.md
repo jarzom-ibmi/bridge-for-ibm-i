@@ -13,6 +13,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
   push fails (everything before the push is rolled back), `--help`, `vX.Y.Z`
   accepted, README version bump limited to the exact patterns the docs check
   watches, and a narrower, rate-limit-friendly GitHub Actions lookup.
+- Supply-chain hardening: the release workflow pins its GitHub Actions to
+  commit SHAs (`checkout` v4.4.0, `setup-node` v4.4.0, `action-gh-release`
+  v2.6.2) and `@vscode/vsce` to 3.9.2 everywhere it is invoked (workflow,
+  `release.mjs`, README).
 
 ## [0.9.2] - 2026-08-25
 

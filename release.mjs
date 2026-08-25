@@ -168,8 +168,9 @@ step("node check-docs.mjs");
 attempt(() => console.log("  " + sh("node check-docs.mjs")), () => abort("check-docs.mjs fejlede (se ovenfor)"));
 
 // ------------------------------------------------------------------ package
-step("npx @vscode/vsce package");
-attempt(() => console.log("  " + sh("npx --yes @vscode/vsce package").split("\n").pop().trim()),
+// Samme pinnede vsce-version som .github/workflows/release.yml.
+step("npx @vscode/vsce@3.9.2 package");
+attempt(() => console.log("  " + sh("npx --yes @vscode/vsce@3.9.2 package").split("\n").pop().trim()),
         () => abort("vsce package fejlede (se ovenfor)"));
 if (!existsSync(VSIX_NEW)) abort(`${VSIX_NEW} blev ikke dannet`);
 attempt(() => {

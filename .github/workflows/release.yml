@@ -16,9 +16,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Actions er pinnet paa commit-SHA (ikke flytbare tags) - supply chain-hærdning.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
 
@@ -34,12 +35,12 @@ jobs:
         run: node check-docs.mjs
 
       - name: Package .vsix
-        run: npx --yes @vscode/vsce package
+        run: npx --yes @vscode/vsce@3.9.2 package
 
       - name: Release notes from CHANGELOG.md
         run: node release-notes.mjs > release-notes.md
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           name: ${{ github.ref_name }}
           body_path: release-notes.md
