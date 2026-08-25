@@ -6,6 +6,18 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [0.9.1] - 2026-08-25
+
+### Added
+- **Open manual** in the right-click menu of *Bridge for IBM i* in the
+  Extensions view, and clickable *Open manual* / *Show output* links in the
+  tooltip of the status bar item — no need to type the command.
+
+### Changed
+- `README.md` is now the complete guide (English + Danish), so it appears on
+  the extension page's **Details** tab. `MANUAL.md` is gone; **Open manual**
+  opens the bundled README as a Markdown preview.
+
 ## [0.9.0] - 2026-08-25
 
 ### Added

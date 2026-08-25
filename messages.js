@@ -51,7 +51,7 @@ const EN = {
   conflictCheckFailed: (e) => `Conflict check failed (${e}) - proceeding with upload`,
   rePulled: (lib, srcf, mbr) => `Re-pulled ${lib}/${srcf}(${mbr}) - local file overwritten`,
   rePullFailed: (e) => `Re-pull failed: ${e}`,
-  manualOpenFallback: (e) => `Markdown preview unavailable (${e}) - opening MANUAL.md as text`,
+  manualOpenFallback: (e) => `Markdown preview unavailable (${e}) - opening the manual (README.md) as text`,
   btnDiff: "Show differences",
   diffTitle: (lib, srcf, mbr) => `${lib}/${srcf}(${mbr}): IBM i \u2194 local`,
   conflictDiffOpened: (lib, srcf, mbr) => `Diff opened for ${lib}/${srcf}(${mbr}) - upload cancelled; save again to retry`,
@@ -65,6 +65,8 @@ const EN = {
   tipOk: (name) => `Bridge for IBM i - uploads go to "${name}"`,
   tipMismatch: (active, bound) => `Bridge for IBM i - WARNING: connected to "${active}" but the mirror is bound to "${bound}". Uploads are blocked.`,
   tipNoConn: "Bridge for IBM i - Code for IBM i is not connected",
+  tipManual: "Open manual",
+  tipOutput: "Show output",
   compileResultWritten: (p) => `Compile result written to ${p}`,
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
 
@@ -155,7 +157,7 @@ const DA = {
   conflictCheckFailed: (e) => `Konflikttjek fejlede (${e}) - fortsætter med upload`,
   rePulled: (lib, srcf, mbr) => `Hentede ${lib}/${srcf}(${mbr}) igen - den lokale fil er overskrevet`,
   rePullFailed: (e) => `Genhentning fejlede: ${e}`,
-  manualOpenFallback: (e) => `Markdown-preview utilgængelig (${e}) - åbner MANUAL.md som tekst`,
+  manualOpenFallback: (e) => `Markdown-preview utilgængelig (${e}) - åbner vejledningen (README.md) som tekst`,
   btnDiff: "Vis forskelle",
   diffTitle: (lib, srcf, mbr) => `${lib}/${srcf}(${mbr}): IBM i \u2194 lokal`,
   conflictDiffOpened: (lib, srcf, mbr) => `Diff åbnet for ${lib}/${srcf}(${mbr}) - upload annulleret; gem igen for at prøve på ny`,
@@ -169,6 +171,8 @@ const DA = {
   tipOk: (name) => `Bridge for IBM i - uploads går til "${name}"`,
   tipMismatch: (active, bound) => `Bridge for IBM i - ADVARSEL: forbundet til "${active}", men spejlet er knyttet til "${bound}". Uploads er blokeret.`,
   tipNoConn: "Bridge for IBM i - Code for IBM i er ikke forbundet",
+  tipManual: "Åbn vejledning",
+  tipOutput: "Vis output",
   compileResultWritten: (p) => `Compile-resultat skrevet til ${p}`,
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)
 

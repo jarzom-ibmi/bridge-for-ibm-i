@@ -491,13 +491,26 @@ async function ensureInstructionFiles(root) {
 
 // ---------------------------------------------------------------- statuslinje
 let statusItem;
+
+// Tooltip med klikbare genveje: vejledningen og outputpanelet. Markdown med
+// command:-links kraever isTrusted.
+function statusTooltip(text) {
+  const md = new vscode.MarkdownString(
+    `${text}\n\n[$(book) ${L.tipManual}](command:bridgeForI.openManual) · ` +
+    `[$(output) ${L.tipOutput}](command:bridgeForI.showOutput)`
+  );
+  md.isTrusted = true;
+  md.supportThemeIcons = true;
+  return md;
+}
+
 async function refreshStatusBar() {
   if (!statusItem) return;
   const instance = getInstance();
   const conn = instance && instance.getConnection();
   if (!conn) {
     statusItem.text = L.statusNoConn;
-    statusItem.tooltip = L.tipNoConn;
+    statusItem.tooltip = statusTooltip(L.tipNoConn);
     statusItem.backgroundColor = undefined;
   } else {
     const active = connName(conn);
@@ -508,11 +521,11 @@ async function refreshStatusBar() {
     }
     if (bound && bound !== active) {
       statusItem.text = L.statusMismatch(active);
-      statusItem.tooltip = L.tipMismatch(active, bound);
+      statusItem.tooltip = statusTooltip(L.tipMismatch(active, bound));
       statusItem.backgroundColor = new vscode.ThemeColor("statusBarItem.warningBackground");
     } else {
       statusItem.text = L.statusOk(active);
-      statusItem.tooltip = L.tipOk(active);
+      statusItem.tooltip = statusTooltip(L.tipOk(active));
       statusItem.backgroundColor = undefined;
     }
   }
@@ -573,7 +586,7 @@ function activate(context) {
   for (const [k, v] of Object.entries(context.workspaceState.get("ibmiBridge.hashes", {})))
     lastUpload.set(k, v);
   out = vscode.window.createOutputChannel("IBM i Bridge");
-  log(L.active("v0.9.0"));
+  log(L.active("v0.9.1"));
 
   context.subscriptions.push(
     vscode.commands.registerCommand("bridgeForI.pull", async () => {
@@ -678,11 +691,18 @@ function activate(context) {
     statusItem,
     vscode.commands.registerCommand("bridgeForI.showOutput", () => out.show(true)),
 
-    // Manualen (MANUAL.md pakkes med i .vsix'en) aabnes i VS Codes egen
-    // Markdown-preview. Den danske udgave ligger i samme fil - hop til dens
-    // overskrift, naar VS Code koerer paa dansk. Fallback: aabn som tekst.
+    // README.md ER vejledningen (den vises som Details-fanen paa extension-
+    // siden). Her aabnes den som Markdown-preview. vsce pakker filen som
+    // "readme.md" (smaat); i udviklingstilstand hedder den README.md - proev
+    // begge. Den danske udgave ligger i samme fil - hop til dens overskrift,
+    // naar VS Code koerer paa dansk. Fallback: aabn som tekst.
     vscode.commands.registerCommand("bridgeForI.openManual", async () => {
-      const base = vscode.Uri.joinPath(context.extensionUri, "MANUAL.md");
+      let base;
+      for (const name of ["README.md", "readme.md"]) {
+        const u = vscode.Uri.joinPath(context.extensionUri, name);
+        try { await vscode.workspace.fs.stat(u); base = u; break; } catch { /* naeste */ }
+      }
+      if (!base) base = vscode.Uri.joinPath(context.extensionUri, "README.md");
       const uri = L === DA
         ? base.with({ fragment: "bridge-for-ibm-i--komplet-vejledning-dansk" })
         : base;

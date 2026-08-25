@@ -2,7 +2,7 @@
 // Dokumentationsrevision for Bridge for i - fanger den drift, der tidligere
 // slap lydløst igennem: forældede versionsnumre, gamle indstillings-ID'er og
 // forkerte .vsix-navne. Koeres foer hver pakning:  node check-docs.mjs
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 const V = JSON.parse(readFileSync("package.json", "utf8")).version;
 const NLS_EN = JSON.parse(readFileSync("package.nls.json", "utf8"));
 const NLS_DA = JSON.parse(readFileSync("package.nls.da.json", "utf8"));
@@ -10,7 +10,10 @@ const NAME = NLS_EN["ext.displayName"];
 const errs = [];
 const must = (cond, msg) => { if (!cond) errs.push(msg); };
 
-for (const f of ["README.md", "MANUAL.md"]) {
+// README.md er baade Details-fanen paa extension-siden og den komplette
+// vejledning ("Open manual" aabner den). MANUAL.md er udgaaet.
+must(!existsSync("MANUAL.md"), "MANUAL.md: skal vaere vaek - README.md er nu vejledningen");
+for (const f of ["README.md"]) {
   const s = readFileSync(f, "utf8");
   must(!/claudeMemberBridge\./.test(s), `${f}: gamle indstillings-ID'er (claudeMemberBridge.*)`);
   must(!/claude-member-bridge-[\d.]+\.vsix/.test(s), `${f}: gammelt .vsix-navn`);
@@ -24,14 +27,13 @@ for (const f of ["README.md", "MANUAL.md"]) {
   must(!/binde spejlet om|spejlet er bundet/.test(s), `${f}: gammel bindings-terminologi - brug "knytte/knyttet til"`);
   must(!/Source [Aa]vailable|separat licens|separate license/.test(s), `${f}: indeholder stadig Source Available-formuleringer`);
 }
-const man = readFileSync("MANUAL.md", "utf8");
-const heads = [...man.matchAll(/\*\*Version ([\d.]+) ·/g)].map(m => m[1]);
-must(heads.length === 2 && heads.every(v => v === V), `MANUAL.md: version i overskrifterne er ${heads} - skal være ${V} begge steder`);
-must(readFileSync("README.md","utf8").includes(`# ${NAME}`), `README.md: overskriften matcher ikke visningsnavnet "${NAME}"`);
-const manual = readFileSync("MANUAL.md","utf8");
+const readme = readFileSync("README.md", "utf8");
+const heads = [...readme.matchAll(/\*\*Version ([\d.]+) ·/g)].map(m => m[1]);
+must(heads.length === 2 && heads.every(v => v === V), `README.md: version i overskrifterne er ${heads} - skal være ${V} begge steder`);
+must(readme.includes(`# ${NAME}`), `README.md: overskriften matcher ikke visningsnavnet "${NAME}"`);
 for (const key of ["cmd.pullNode","cmd.pull","cmd.openManual"])
   for (const [lang, nls] of [["EN", NLS_EN], ["DA", NLS_DA]])
-    must(manual.includes(nls[key]), `MANUAL.md: mangler den faktiske ${lang}-titel "${nls[key]}" - dokumentet citerer ikke UI'en korrekt`);
+    must(readme.includes(nls[key]), `README.md: mangler den faktiske ${lang}-titel "${nls[key]}" - dokumentet citerer ikke UI'en korrekt`);
 const lic = readFileSync("LICENSE", "utf8");
 must(lic.includes("MIT License") && lic.includes("Glenn Jarzomkowski") && lic.includes("jarzom@gmail.com"), "LICENSE: skal vaere MIT med ophavsret og kontakt-email");
 must(!/Source Available/i.test(lic), "LICENSE: indeholder stadig Source Available-tekst");
