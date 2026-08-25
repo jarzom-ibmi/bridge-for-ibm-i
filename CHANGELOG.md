@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.9.2] - 2026-08-25
 
 ### Added
 - `release.mjs`: one command (`node release.mjs patch|minor|major`) bumps the
