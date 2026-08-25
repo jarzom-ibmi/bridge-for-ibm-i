@@ -1,6 +1,8 @@
 .git*
+.github/**
 *.vsix
 *.zip
 icon.svg
 icon-128.png
 check-docs.mjs
+release-notes.mjs

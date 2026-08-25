@@ -64,7 +64,8 @@ Key properties:
 
 ## 3. Installation
 
-1. Get `bridge-for-i-0.9.1.vsix`.
+1. Download `bridge-for-i-0.9.1.vsix` from
+   [GitHub Releases](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases).
 2. Install it — either from the command line:
 
    ```bash
@@ -287,7 +288,8 @@ Nøgleegenskaber:
 
 ## 3. Installation
 
-1. Hent `bridge-for-i-0.9.1.vsix`.
+1. Hent `bridge-for-i-0.9.1.vsix` fra
+   [GitHub Releases](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases).
 2. Installér — enten fra kommandolinjen:
 
    ```bash

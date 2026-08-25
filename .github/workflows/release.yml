@@ -1,0 +1,46 @@
+# Release: naar et tag "vX.Y.Z" pushes, bygges .vsix'en, dokumentationen
+# tjekkes, og en GitHub Release oprettes med .vsix'en og CHANGELOG-afsnittet.
+#
+#   git tag -a v0.9.1 -m "Bridge for IBM i 0.9.1"
+#   git push origin v0.9.1
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Tag must match package.json version
+        run: |
+          V="v$(node -p "require('./package.json').version")"
+          if [ "$V" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $V"
+            exit 1
+          fi
+
+      - name: Documentation drift check
+        run: node check-docs.mjs
+
+      - name: Package .vsix
+        run: npx --yes @vscode/vsce package
+
+      - name: Release notes from CHANGELOG.md
+        run: node release-notes.mjs > release-notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+          files: bridge-for-i-*.vsix
