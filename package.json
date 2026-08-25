@@ -1,0 +1,102 @@
+{
+  "name": "bridge-for-i",
+  "displayName": "%ext.displayName%",
+  "description": "%ext.description%",
+  "version": "0.8.2",
+  "publisher": "local",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jarzom-ibmi/bridge-for-ibm-i.git"
+  },
+  "homepage": "https://github.com/jarzom-ibmi/bridge-for-ibm-i#readme",
+  "bugs": {
+    "url": "https://github.com/jarzom-ibmi/bridge-for-ibm-i/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "halcyontechltd.code-for-ibmi"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "bridgeForI.pull",
+        "title": "%cmd.pull%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.pullNode",
+        "title": "%cmd.pullNode%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.compile",
+        "title": "%cmd.compile%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.uploadCurrent",
+        "title": "%cmd.uploadCurrent%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.pullCurrent",
+        "title": "%cmd.pullCurrent%",
+        "category": "IBM i Bridge"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "bridgeForI.pullNode",
+          "when": "view == objectBrowser && viewItem == member",
+          "group": "claudebridge@1"
+        },
+        {
+          "command": "bridgeForI.pullNode",
+          "when": "view == objectBrowser && viewItem == SPF",
+          "group": "claudebridge@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "%cfg.title%",
+      "properties": {
+        "bridgeForI.targetLibrary": {
+          "type": "string",
+          "default": "",
+          "description": "%cfg.targetLibrary%"
+        },
+        "bridgeForI.mirrorFolder": {
+          "type": "string",
+          "default": "ibmi",
+          "description": "%cfg.mirrorFolder%"
+        },
+        "bridgeForI.autoUploadOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "%cfg.autoUpload%"
+        },
+        "bridgeForI.conflictCheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "%cfg.conflictCheck%"
+        }
+      }
+    }
+  },
+  "author": {
+    "name": "Glenn Jarzomkowski",
+    "email": "jarzom@gmail.com"
+  },
+  "icon": "icon.png"
+}

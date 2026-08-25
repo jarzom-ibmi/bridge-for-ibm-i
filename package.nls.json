@@ -1,0 +1,14 @@
+{
+  "ext.displayName": "Bridge for IBM i",
+  "ext.description": "Mirrors IBM i source members as local files through Code for IBM i, so AI agents (Claude Code, Codex, Copilot, ...) and any other tool can work on them. Save = automatic upload.",
+  "cmd.pull": "Pull member(s) to workspace (for AI)",
+  "cmd.pullNode": "Pull to workspace (for AI)",
+  "cmd.compile": "Compile current file on IBM i",
+  "cmd.uploadCurrent": "Upload current file to IBM i",
+  "cfg.title": "Bridge for IBM i",
+  "cfg.targetLibrary": "Target library used when compiling (e.g. MYLIB)",
+  "cfg.mirrorFolder": "Workspace folder where members are mirrored",
+  "cfg.autoUpload": "Automatically upload to IBM i when a mirrored file changes",
+  "cmd.pullCurrent": "Pull current file again (overwrite local)",
+  "cfg.conflictCheck": "Before uploading, warn if the member changed on the IBM i since your last pull/upload"
+}

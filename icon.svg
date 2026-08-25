@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Bridge for IBM i - logo. (c) 2026 Glenn Jarzomkowski, MIT -->
+  <rect width="1024" height="1024" rx="190" fill="#141B26"/>
+  <!-- kabler -->
+  <path d="M 362 716 Q 512 655 662 716" stroke="#E9EEF6" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M 222 372 Q 150 640 128 706" stroke="#E9EEF6" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M 802 372 Q 874 640 896 706" stroke="#E9EEF6" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M 362 372 Q 512 655 662 372" stroke="#E9EEF6" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <g stroke="#E9EEF6" stroke-width="8">
+    <line x1="430" y1="614" x2="430" y2="702"/>
+    <line x1="485" y1="646" x2="485" y2="702"/>
+    <line x1="540" y1="650" x2="540" y2="702"/>
+    <line x1="595" y1="622" x2="595" y2="702"/>
+  </g>
+  <!-- brodæk -->
+  <rect x="110" y="700" width="804" height="42" rx="21" fill="#E9EEF6"/>
+  <!-- venstre tårn: member/green-screen -->
+  <rect x="206" y="356" width="172" height="352" rx="30" fill="#22303F"/>
+  <rect x="240" y="420" width="104" height="30" rx="15" fill="#4ADE80"/>
+  <rect x="240" y="494" width="72"  height="30" rx="15" fill="#4ADE80"/>
+  <rect x="240" y="568" width="92"  height="30" rx="15" fill="#4ADE80"/>
+  <!-- højre tårn: Claude Code-prompt -->
+  <rect x="646" y="356" width="172" height="352" rx="30" fill="#0F62FE"/>
+  <path d="M 674 454 L 726 506 L 674 558" stroke="#FFFFFF" stroke-width="30" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="746" y="546" width="64" height="26" rx="13" fill="#FFFFFF"/>
+</svg>

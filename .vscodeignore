@@ -1,0 +1,6 @@
+MANUAL.md
+*.vsix
+*.zip
+icon.svg
+icon-128.png
+check-docs.mjs
