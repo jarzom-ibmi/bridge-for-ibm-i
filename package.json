@@ -20,6 +20,10 @@
     "Other"
   ],
   "main": "./extension.js",
+  "scripts": {
+    "check": "node check-docs.mjs",
+    "release": "node release.mjs"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],

@@ -38,7 +38,7 @@ const lic = readFileSync("LICENSE", "utf8");
 must(lic.includes("MIT License") && lic.includes("Glenn Jarzomkowski") && lic.includes("jarzom@gmail.com"), "LICENSE: skal vaere MIT med ophavsret og kontakt-email");
 must(!/Source Available/i.test(lic), "LICENSE: indeholder stadig Source Available-tekst");
 must(JSON.parse(readFileSync("package.json","utf8")).license === "MIT", "package.json: license-feltet skal vaere MIT");
-must(!/licen[sc]e|licens|MIT/i.test(readFileSync("CHANGELOG.md","utf8")), "CHANGELOG.md: skal vaere fri for licens-omtale");
+must(!/licen[sc]e|licens|\bMIT\b/i.test(readFileSync("CHANGELOG.md","utf8")), "CHANGELOG.md: skal vaere fri for licens-omtale");
 const cl = readFileSync("CHANGELOG.md", "utf8");
 must(cl.includes(`## [${V}]`), `CHANGELOG.md: mangler post for [${V}]`);
 

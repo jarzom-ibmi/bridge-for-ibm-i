@@ -95,6 +95,12 @@ To rebuild the .vsix from source:
 npx --yes @vscode/vsce package
 ```
 
+To publish a new version (maintainer): write the notes under
+`## [Unreleased]` in `CHANGELOG.md`, commit, then run
+`node release.mjs patch|minor|major` — it bumps the version everywhere, runs
+the docs check, builds the .vsix, commits, tags and pushes; GitHub Actions
+then creates the release.
+
 **Reading this guide inside VS Code.** It is the *Details* tab of the
 extension page (Extensions panel → Bridge for IBM i). To open it as a
 Markdown preview tab instead: right-click *Bridge for IBM i* in the Extensions
@@ -318,6 +324,11 @@ Sådan bygges .vsix'en fra kildekoden:
 ```bash
 npx --yes @vscode/vsce package
 ```
+
+Ny version (vedligeholder): skriv noterne under `## [Unreleased]` i
+`CHANGELOG.md`, commit, og kør `node release.mjs patch|minor|major` — den
+bumper versionen alle steder, kører dokumentationstjekket, bygger .vsix'en,
+committer, tagger og pusher; GitHub Actions opretter derefter releasen.
 
 **Læs denne vejledning inde i VS Code.** Den er *Details*-fanebladet på
 extension-siden (Extensions-panelet → Bridge for IBM i). Vil du hellere have
