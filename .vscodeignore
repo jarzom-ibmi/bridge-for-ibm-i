@@ -1,3 +1,4 @@
+.git*
 MANUAL.md
 *.vsix
 *.zip
