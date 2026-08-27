@@ -89,6 +89,9 @@ const EN = {
   uploadDirDeclined: "(folder) upload declined by the user",
   uploadDirAllUnchanged: (scope, n) => `${scope}: nothing uploaded - all ${n} file(s) are unchanged since the last pull/upload.`,
   btnUploadAnyway: "Upload all anyway",
+  pullNodeInvoked: (what) => `(pull) requested for ${what}`,
+  pullFailed: (e) => `Pull failed: ${e}`,
+  memberListSqlFailed: (e) => `Member list via SQL failed (${e}) - using Code for IBM i's member list instead`,
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
 
 The files in this folder are local copies of source members on an IBM i.
@@ -220,6 +223,9 @@ const DA = {
   uploadDirDeclined: "(mappe) upload afvist af brugeren",
   uploadDirAllUnchanged: (scope, n) => `${scope}: intet uploadet - alle ${n} fil(er) er uændrede siden seneste pull/upload.`,
   btnUploadAnyway: "Upload alle alligevel",
+  pullNodeInvoked: (what) => `(pull) bedt om for ${what}`,
+  pullFailed: (e) => `Pull fejlede: ${e}`,
+  memberListSqlFailed: (e) => `Member-liste via SQL fejlede (${e}) - bruger Code for IBM i's egen member-liste i stedet`,
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)
 
 Filerne i denne mappe er lokale kopier af source members på en IBM i.

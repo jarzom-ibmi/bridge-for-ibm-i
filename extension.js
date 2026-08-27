@@ -230,7 +230,30 @@ async function collectMirrorFiles(root, lib, srcf) {
   return files;
 }
 
+// Member-liste: SQL foerst (giver aendringstidspunkt til konfliktvagten);
+// fejler SQL (fx SQL-runner slaaet fra paa forbindelsen), bruges Code for
+// IBM i's egen getMemberList, som har sin egen ikke-SQL-fallback.
 async function membersOf(conn, lib, srcf, onlyMbr) {
+  try {
+    return await membersOfSql(conn, lib, srcf, onlyMbr);
+  } catch (e) {
+    log(L.memberListSqlFailed((e && e.message) || e));
+    const content = typeof conn.getContent === "function" ? conn.getContent() : undefined;
+    if (!content || typeof content.getMemberList !== "function") throw e;
+    const rows = await content.getMemberList({
+      library: lib,
+      sourceFile: srcf,
+      members: onlyMbr || undefined,
+    });
+    return (rows || []).map((r) => ({
+      name: up(r.name),
+      type: up(r.extension || "TXT"),
+      ts: "",
+    }));
+  }
+}
+
+async function membersOfSql(conn, lib, srcf, onlyMbr) {
   let cond = "";
   if (onlyMbr) {
     const pat = onlyMbr.replace(/\*/g, "%").replace(/'/g, "''");
@@ -745,7 +768,12 @@ function activate(context) {
         vscode.window.showErrorMessage(L.pullFormatError);
         return;
       }
-      await pullMembers(parts[0], parts[1], parts[2]);
+      try {
+        await pullMembers(parts[0], parts[1], parts[2]);
+      } catch (e) {
+        log(L.pullFailed((e && e.stack) || e));
+        vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
+      }
     }),
 
     vscode.commands.registerCommand("bridgeForI.pullNode", async (node) => {
@@ -753,10 +781,16 @@ function activate(context) {
       const lib = m && (m.library || m.lib);
       const file = m && (m.file || m.sourceFile || m.name);
       const name = node && node.member ? m.name : undefined;
-      if (lib && file) {
-        await pullMembers(lib, node.member ? m.file : file, name);
-      } else {
-        await vscode.commands.executeCommand("bridgeForI.pull");
+      log(L.pullNodeInvoked(lib && file ? `${lib}/${node.member ? m.file : file}${name ? `(${name})` : ""}` : "?"));
+      try {
+        if (lib && file) {
+          await pullMembers(lib, node.member ? m.file : file, name);
+        } else {
+          await vscode.commands.executeCommand("bridgeForI.pull");
+        }
+      } catch (e) {
+        log(L.pullFailed((e && e.stack) || e));
+        vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
       }
     }),
 

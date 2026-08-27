@@ -6,6 +6,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Fixed
+- **Pull did nothing** on connections where the SQL runner is unavailable: the
+  member list was fetched with SQL only and the error was swallowed. The list
+  now falls back to Code for IBM i's own `getMemberList` (which has a non-SQL
+  path), and every pull failure is logged in the output panel and shown as an
+  error message instead of failing silently.
+
 ## [0.10.2] - 2026-08-27
 
 ### Changed
