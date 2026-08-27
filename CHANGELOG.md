@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.10.3] - 2026-08-27
 
 ### Fixed
 - **Pull did nothing** on connections where the SQL runner is unavailable: the
