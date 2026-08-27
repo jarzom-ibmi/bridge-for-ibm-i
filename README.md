@@ -152,8 +152,7 @@ version control — git on the mirror is your history and your undo.
 | Command (Ctrl+Shift+P) | Does |
 |---|---|
 | IBM i Bridge: Pull member(s) to workspace (for AI) | Prompt `LIB/SRCFILE[/MEMBER]`, mirror it |
-| Pull to workspace (for AI) *(context menu)* | Same, from Object Browser right-click — on a source file it fetches **all** its members |
-| Pull whole library to workspace (for AI) *(context menu)* | Right-click a library (Object Browser or Library List): every source file with every member lands in `ibmi/LIB/…`. Also via the palette by typing just `LIB` |
+| Pull to workspace (for AI) *(context menu)* | Submenu on Object Browser / Library List right-click, like Code for IBM i's *Download*: **Member** (that one member), **File → Member** (every member of the source file), **Library → File → Member** (every source file of the library with every member). Only the choices that make sense for the node are shown. Typing just `LIB` in the palette command does the library pull too |
 | IBM i Bridge: Compile current file on IBM i | Save + upload + correct CRT command |
 | IBM i Bridge: Upload current file to IBM i | Manual upload; also a diagnostic |
 | IBM i Bridge: Upload folder to IBM i (all members) | Right-click a folder in the Explorer: `ibmi/LIB/SRCFILE` uploads every member of that source file, `ibmi/LIB` every source file in the library, `ibmi/` the whole mirror. Unchanged files are skipped, new files become new members, conflicts ask once with "Overwrite all" / "Skip all". Also in the Object Browser right-click menu: on a source file it uploads the mirrored folder, on a member just that local file. From the palette it uses the active file's folder, or asks `LIB/SRCFILE` |
@@ -386,8 +385,7 @@ versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 | Kommando (Ctrl+Shift+P) | Gør |
 |---|---|
 | IBM i Bridge: Pull member(s) til workspace (til AI) | Spørger `LIB/KILDEFIL[/MEMBER]`, spejler det |
-| Pull til workspace (til AI) *(kontekstmenu)* | Samme, fra højreklik i Object Browser — på en kildefil hentes **alle** dens members |
-| Pull hele biblioteket til workspace (til AI) *(kontekstmenu)* | Højreklik et bibliotek (Object Browser eller Library List): alle kildefiler med samtlige members lander i `ibmi/LIB/…`. Også fra paletten ved blot at skrive `LIB` |
+| Pull til workspace (til AI) *(kontekstmenu)* | Undermenu ved højreklik i Object Browser / Library List, som Code for IBM i's *Download*: **Member** (det ene member), **Kildefil → Member** (alle members i kildefilen), **Bibliotek → Kildefil → Member** (alle kildefiler i biblioteket med samtlige members). Kun de valg der giver mening for noden vises. Skriver du blot `LIB` i palette-kommandoen, hentes biblioteket også |
 | IBM i Bridge: Kompilér aktuel fil på IBM i | Gem + upload + korrekt CRT-kommando |
 | IBM i Bridge: Upload aktuel fil til IBM i | Manuel upload; også diagnose |
 | IBM i Bridge: Upload mappe til IBM i (alle members) | Højreklik en mappe i Explorer: `ibmi/LIB/KILDEFIL` uploader alle members i kildefilen, `ibmi/LIB` alle kildefiler i biblioteket, `ibmi/` hele spejlet. Uændrede filer springes over, nye filer bliver nye members, konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Findes også i Object Browsers højreklik-menu: på en kildefil uploades den spejlede mappe, på et member kun den ene lokale fil. Fra paletten bruges den aktive fils mappe, ellers spørges `LIB/KILDEFIL` |

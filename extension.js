@@ -274,6 +274,35 @@ async function membersOfSql(conn, lib, srcf, onlyMbr) {
 }
 
 // ---------------------------------------------------------------- pull
+// Koordinater fra en Code for IBM i-node (Object Browser / Library List):
+//   member-node:   .member = { library, file, name }
+//   kildefil-node: .object = { library, name, type: "*FILE" }
+//   *LIB-objekt:   .object = { name, type: "*LIB" }  (.library = navnet)
+//   filter/liste:  .library = navnet
+function nodeCoords(node) {
+  if (!node) return {};
+  if (node.member) {
+    const m = node.member;
+    return { lib: up(m.library), file: up(m.file), mbr: up(m.name) };
+  }
+  if (node.object) {
+    const o = node.object;
+    if (o.type === "*LIB") return { lib: up(o.name) };
+    return { lib: up(o.library), file: up(o.name) };
+  }
+  if (typeof node.library === "string" && node.library) return { lib: up(node.library) };
+  return {};
+}
+
+async function guardedPull(fn) {
+  try {
+    await fn();
+  } catch (e) {
+    log(L.pullFailed((e && e.stack) || e));
+    vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
+  }
+}
+
 // Forbindelse + spejlrod + binding (.bridge.json). Returnerer { ctx, root }
 // eller undefined hvis brugeren afviser at knytte spejlet til forbindelsen.
 async function preparePull() {
@@ -863,40 +892,42 @@ function activate(context) {
       }
     }),
 
-    // Helt bibliotek fra Object Browser (objekt *LIB eller filter med bibliotek)
-    // eller Library List. Alle har .library = navnet.
+    // Undermenuen "Pull to workspace (for AI)" i Object Browser / Library List:
+    //   Member                    -> det ene member
+    //   File -> Member            -> hele kildefilen
+    //   Library -> File -> Member -> hele biblioteket
+    // Alle tre laeser koordinaterne fra den node, der blev hoejreklikket.
+    vscode.commands.registerCommand("bridgeForI.pullMember", async (node) => {
+      const c = nodeCoords(node);
+      log(L.pullNodeInvoked(c.mbr ? `${c.lib}/${c.file}(${c.mbr})` : "?"));
+      await guardedPull(async () => {
+        if (c.lib && c.file && c.mbr) await pullMembers(c.lib, c.file, c.mbr);
+        else await vscode.commands.executeCommand("bridgeForI.pull");
+      });
+    }),
+
+    vscode.commands.registerCommand("bridgeForI.pullFile", async (node) => {
+      const c = nodeCoords(node);
+      log(L.pullNodeInvoked(c.file ? `${c.lib}/${c.file} (whole file)` : "?"));
+      await guardedPull(async () => {
+        if (c.lib && c.file) await pullMembers(c.lib, c.file);
+        else await vscode.commands.executeCommand("bridgeForI.pull");
+      });
+    }),
+
     vscode.commands.registerCommand("bridgeForI.pullLibrary", async (node) => {
-      let lib = node && (typeof node.library === "string" && node.library
-        || (node.object && node.object.type === "*LIB" && node.object.name)
-        || (node.object && node.object.library));
+      let lib = nodeCoords(node).lib;
       if (!lib) {
         lib = await vscode.window.showInputBox({ prompt: L.pullLibPrompt, placeHolder: "MYLIB" });
         if (!lib) return;
       }
-      try {
-        await pullLibrary(lib);
-      } catch (e) {
-        log(L.pullFailed((e && e.stack) || e));
-        vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
-      }
+      await guardedPull(() => pullLibrary(lib));
     }),
 
+    // Bagudkompatibel: member-node -> memberet, kildefil-node -> hele filen.
     vscode.commands.registerCommand("bridgeForI.pullNode", async (node) => {
-      const m = node && (node.member || node.object || node);
-      const lib = m && (m.library || m.lib);
-      const file = m && (m.file || m.sourceFile || m.name);
-      const name = node && node.member ? m.name : undefined;
-      log(L.pullNodeInvoked(lib && file ? `${lib}/${node.member ? m.file : file}${name ? `(${name})` : ""}` : "?"));
-      try {
-        if (lib && file) {
-          await pullMembers(lib, node.member ? m.file : file, name);
-        } else {
-          await vscode.commands.executeCommand("bridgeForI.pull");
-        }
-      } catch (e) {
-        log(L.pullFailed((e && e.stack) || e));
-        vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
-      }
+      const c = nodeCoords(node);
+      await vscode.commands.executeCommand(c.mbr ? "bridgeForI.pullMember" : "bridgeForI.pullFile", node);
     }),
 
     vscode.commands.registerCommand("bridgeForI.compile", compileCurrent),

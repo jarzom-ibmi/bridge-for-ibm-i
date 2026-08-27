@@ -38,8 +38,13 @@
         "category": "IBM i Bridge"
       },
       {
-        "command": "bridgeForI.pullNode",
-        "title": "%cmd.pullNode%",
+        "command": "bridgeForI.pullMember",
+        "title": "%cmd.pullMember%",
+        "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.pullFile",
+        "title": "%cmd.pullFile%",
         "category": "IBM i Bridge"
       },
       {
@@ -73,7 +78,34 @@
         "category": "IBM i Bridge"
       }
     ],
+    "submenus": [
+      {
+        "id": "bridgeForI.pullSubmenu",
+        "label": "%cmd.pullNode%"
+      }
+    ],
     "menus": {
+      "commandPalette": [
+        { "command": "bridgeForI.pullMember", "when": "false" },
+        { "command": "bridgeForI.pullFile", "when": "false" },
+        { "command": "bridgeForI.pullLibrary", "when": "false" }
+      ],
+      "bridgeForI.pullSubmenu": [
+        {
+          "command": "bridgeForI.pullMember",
+          "when": "viewItem == member",
+          "group": "pull@1"
+        },
+        {
+          "command": "bridgeForI.pullFile",
+          "when": "viewItem == member || viewItem == SPF",
+          "group": "pull@2"
+        },
+        {
+          "command": "bridgeForI.pullLibrary",
+          "group": "pull@3"
+        }
+      ],
       "extension/context": [
         {
           "command": "bridgeForI.openManual",
@@ -89,22 +121,12 @@
       ],
       "view/item/context": [
         {
-          "command": "bridgeForI.pullNode",
-          "when": "view == objectBrowser && viewItem == member",
+          "submenu": "bridgeForI.pullSubmenu",
+          "when": "view == objectBrowser && viewItem =~ /^(member|SPF|object\\.lib|filter_library)/",
           "group": "claudebridge@1"
         },
         {
-          "command": "bridgeForI.pullNode",
-          "when": "view == objectBrowser && viewItem == SPF",
-          "group": "claudebridge@1"
-        },
-        {
-          "command": "bridgeForI.pullLibrary",
-          "when": "view == objectBrowser && viewItem =~ /^(object\\.lib|filter_library)/",
-          "group": "claudebridge@1"
-        },
-        {
-          "command": "bridgeForI.pullLibrary",
+          "submenu": "bridgeForI.pullSubmenu",
           "when": "view == libraryListView && viewItem =~ /library/",
           "group": "claudebridge@1"
         },

@@ -6,6 +6,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Changed
+- **Pull to workspace (for AI)** is now a submenu, mirroring Code for IBM i's
+  *Download*: **Member**, **File → Member** and **Library → File → Member**.
+  It appears on members, source files and libraries in the Object Browser and
+  on libraries in the Library List, showing only the choices that fit the node.
+
 ## [0.11.0] - 2026-08-27
 
 ### Added
