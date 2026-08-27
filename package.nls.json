@@ -5,6 +5,7 @@
   "cmd.pullNode": "Pull to workspace (for AI)",
   "cmd.compile": "Compile current file on IBM i",
   "cmd.uploadCurrent": "Upload current file to IBM i",
+  "cmd.uploadFolder": "Upload folder to IBM i (all members)",
   "cfg.title": "Bridge for IBM i",
   "cfg.targetLibrary": "Target library used when compiling (e.g. MYLIB)",
   "cfg.mirrorFolder": "Workspace folder where members are mirrored",

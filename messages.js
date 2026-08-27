@@ -68,6 +68,21 @@ const EN = {
   tipManual: "Open manual",
   tipOutput: "Show output",
   compileResultWritten: (p) => `Compile result written to ${p}`,
+  dirNotInMirror: (mirror) => `That folder is not inside the ${mirror}/ mirror (expected ${mirror}/, ${mirror}/LIBRARY or ${mirror}/LIBRARY/SOURCEFILE).`,
+  noLocalFiles: (scope) => `No member files found locally under ${scope}.`,
+  uploadDirConfirm: (n, scope, conn) => `Upload ${n} file(s) from ${scope} to the IBM i "${conn}"? Members are overwritten with the local files; missing members are created.`,
+  btnUploadAll: "Upload all",
+  uploadingTitle: (n, scope) => `Uploading ${n} file(s) from ${scope}`,
+  uploadDirPrompt: "What should be uploaded? LIBRARY/SOURCEFILE or LIBRARY (all source files)",
+  uploadDirFormatError: "Use the format LIBRARY/SOURCEFILE or LIBRARY.",
+  btnOverwriteAll: "Overwrite all",
+  btnSkip: "Skip",
+  btnSkipAll: "Skip all",
+  bulkCancelled: "Folder upload cancelled by the user - remaining files were not uploaded.",
+  uploadDirFileError: (rel, e) => `ERROR uploading ${rel}: ${e}`,
+  uploadDirLog: (scope, ok, same, bad, total) => `Folder upload ${scope}: ${ok} uploaded, ${same} unchanged, ${bad} failed/skipped (of ${total})`,
+  uploadDirInfo: (scope, ok, same, bad) => `${scope}: ${ok} uploaded, ${same} unchanged${bad ? `, ${bad} failed/skipped` : ""}`,
+  btnShowOutput: "Show output",
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
 
 The files in this folder are local copies of source members on an IBM i.
@@ -76,6 +91,8 @@ apply to any AI agent or tool editing files here.
 
 - Edit the files directly. When a file changes on disk it is uploaded to the
   IBM i automatically by the bridge - do not run ssh or copy anything yourself.
+  If many files were changed, the user can also upload a whole folder with
+  "IBM i Bridge: Upload folder to IBM i (all members)".
 - After a change: ask the user to run "IBM i Bridge: Compile current file",
   or suggest the command yourself, and show the compile result.
 - Member names are at most 10 characters. New files must follow the folder
@@ -94,6 +111,8 @@ The path layout is ibmi/LIBRARY/SOURCEFILE/MEMBER.type.
 
 - Edit the files directly. When a file changes on disk it is uploaded to the
   IBM i automatically by the bridge - do not run ssh or copy anything yourself.
+  If many files were changed, the user can also upload a whole folder with
+  "IBM i Bridge: Upload folder to IBM i (all members)".
 - After a change: ask the user to run "IBM i Bridge: Compile current file",
   or suggest the command yourself, and show the compile result.
 - Member names are at most 10 characters. New files must follow the folder
@@ -174,6 +193,21 @@ const DA = {
   tipManual: "Åbn vejledning",
   tipOutput: "Vis output",
   compileResultWritten: (p) => `Compile-resultat skrevet til ${p}`,
+  dirNotInMirror: (mirror) => `Den mappe ligger ikke i ${mirror}/-spejlet (forventet ${mirror}/, ${mirror}/BIBLIOTEK eller ${mirror}/BIBLIOTEK/KILDEFIL).`,
+  noLocalFiles: (scope) => `Ingen member-filer fundet lokalt under ${scope}.`,
+  uploadDirConfirm: (n, scope, conn) => `Upload ${n} fil(er) fra ${scope} til IBM i'en "${conn}"? Members overskrives med de lokale filer; manglende members oprettes.`,
+  btnUploadAll: "Upload alle",
+  uploadingTitle: (n, scope) => `Uploader ${n} fil(er) fra ${scope}`,
+  uploadDirPrompt: "Hvad skal uploades? BIBLIOTEK/KILDEFIL eller BIBLIOTEK (alle kildefiler)",
+  uploadDirFormatError: "Brug formatet BIBLIOTEK/KILDEFIL eller BIBLIOTEK.",
+  btnOverwriteAll: "Overskriv alle",
+  btnSkip: "Spring over",
+  btnSkipAll: "Spring alle over",
+  bulkCancelled: "Mappe-upload afbrudt af brugeren - de resterende filer blev ikke uploadet.",
+  uploadDirFileError: (rel, e) => `FEJL ved upload af ${rel}: ${e}`,
+  uploadDirLog: (scope, ok, same, bad, total) => `Mappe-upload ${scope}: ${ok} uploadet, ${same} uændret, ${bad} fejlet/sprunget over (af ${total})`,
+  uploadDirInfo: (scope, ok, same, bad) => `${scope}: ${ok} uploadet, ${same} uændret${bad ? `, ${bad} fejlet/sprunget over` : ""}`,
+  btnShowOutput: "Vis output",
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)
 
 Filerne i denne mappe er lokale kopier af source members på en IBM i.
@@ -182,6 +216,8 @@ enhver AI-agent eller ethvert værktøj, der redigerer filer her.
 
 - Rediger filerne direkte. Når en fil ændres på disken, uploades den automatisk
   til IBM i'en af broen - du skal ikke selv bruge ssh eller kopiere noget.
+  Er mange filer ændret, kan brugeren også uploade en hel mappe med
+  "IBM i Bridge: Upload mappe til IBM i (alle members)".
 - Efter en ændring: bed brugeren køre "IBM i Bridge: Kompilér aktuel fil",
   eller foreslå selv kommandoen, og vis compile-resultatet.
 - Membernavne må højst være 10 tegn. Nye filer skal følge mappestrukturen
@@ -200,6 +236,8 @@ Stien er ibmi/BIBLIOTEK/KILDEFIL/MEMBER.type.
 
 - Rediger filerne direkte. Når en fil ændres på disken, uploades den automatisk
   til IBM i'en af broen - du skal ikke selv bruge ssh eller kopiere noget.
+  Er mange filer ændret, kan brugeren også uploade en hel mappe med
+  "IBM i Bridge: Upload mappe til IBM i (alle members)".
 - Efter en ændring: bed brugeren køre "IBM i Bridge: Kompilér aktuel fil",
   eller foreslå selv kommandoen, og vis compile-resultatet.
 - Membernavne må højst være 10 tegn. Nye filer skal følge mappestrukturen

@@ -188,6 +188,48 @@ function parseMirrorPath(fileUri) {
   return explainMirrorPath(fileUri).coords;
 }
 
+// Lokal MAPPE i spejlet -> { root, lib?, srcf? }. Dybden afgoer omfanget:
+// roden = hele spejlet, LIB = alle kildefiler, LIB/KILDEFIL = én kildefil.
+function explainMirrorDir(dirUri) {
+  for (const root of mirrorRoots()) {
+    const rel = path.relative(root.fsPath, dirUri.fsPath);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) continue;
+    const parts = rel.split(path.sep).filter(Boolean);
+    if (parts.length > 2) return undefined;
+    if (parts.some((p) => p.startsWith("."))) return undefined;
+    return { root, lib: parts[0] && up(parts[0]), srcf: parts[1] && up(parts[1]) };
+  }
+  return undefined;
+}
+
+// Alle member-filer under <root>/[lib]/[srcf] - kun praecis 3 niveauer dybt,
+// skjulte navne (.compile, .bridge.json, .git ...) springes over.
+async function collectMirrorFiles(root, lib, srcf) {
+  const files = [];
+  const isFile = (t) => (t & vscode.FileType.File) !== 0;
+  const isDir = (t) => (t & vscode.FileType.Directory) !== 0;
+  const listDirs = async (uri) => {
+    let entries = [];
+    try { entries = await vscode.workspace.fs.readDirectory(uri); } catch { /* mangler */ }
+    return entries.filter(([n, t]) => isDir(t) && !n.startsWith(".")).map(([n]) => n).sort();
+  };
+  const libs = lib ? [lib] : await listDirs(root);
+  for (const l of libs) {
+    const libUri = vscode.Uri.joinPath(root, l);
+    const srcfs = srcf ? [srcf] : await listDirs(libUri);
+    for (const s of srcfs) {
+      const dir = vscode.Uri.joinPath(libUri, s);
+      let entries = [];
+      try { entries = await vscode.workspace.fs.readDirectory(dir); } catch { /* mangler */ }
+      for (const [n, t] of entries.sort((a, b) => a[0].localeCompare(b[0]))) {
+        if (!isFile(t) || n.startsWith(".") || n.lastIndexOf(".") < 1) continue;
+        files.push(vscode.Uri.joinPath(dir, n));
+      }
+    }
+  }
+  return files;
+}
+
 async function membersOf(conn, lib, srcf, onlyMbr) {
   let cond = "";
   if (onlyMbr) {
@@ -283,19 +325,24 @@ async function pullMembers(lib, srcf, onlyMbr) {
 }
 
 // ---------------------------------------------------------------- upload
-// kilde: "gem" | "watcher" | "manuel" | "compile" - kun til loggen
-async function uploadFile(fileUri, kilde) {
+// kilde: "gem" | "watcher" | "manuel" | "compile" | "mappe" - kun til loggen
+// bulk (valgfri): { decision: null|"overwriteAll"|"skipAll" } - deles mellem
+// filerne i en mappe-upload, saa konfliktvalget "alle" huskes, og fejl kun
+// logges i stedet for at poppe op én gang pr. fil.
+// Returnerer true (uploadet), "unchanged" (sprunget over, uaendret) eller false.
+async function uploadFile(fileUri, kilde, bulk) {
   const coords = parseMirrorPath(fileUri);
   if (!coords) {
     log(L.outsideMirror(kilde, fileUri.fsPath));
     return false;
   }
   const { lib, srcf, mbr, ext } = coords;
+  const fail = (msg) => { if (bulk) log(msg); else vscode.window.showErrorMessage(msg); };
 
   const bytes = await vscode.workspace.fs.readFile(fileUri);
   if (lastUpload.get(fileUri.fsPath) === contentHash(bytes)) {
     log(L.unchangedSkip(kilde, lib, srcf, mbr));
-    return true;
+    return "unchanged";
   }
 
   const ctx = requireConnection();
@@ -304,7 +351,7 @@ async function uploadFile(fileUri, kilde) {
   if (coords.root && !(await checkBinding(coords.root, ctx.conn))) return false;
 
   if (mbr.length > 10) {
-    vscode.window.showErrorMessage(L.nameTooLong(mbr));
+    fail(L.nameTooLong(mbr));
     return false;
   }
 
@@ -317,12 +364,30 @@ async function uploadFile(fileUri, kilde) {
       const now = await memberTimestamp(ctx.conn, lib, srcf, mbr);
       const base = baselines[fileUri.fsPath];
       if (now && base && now !== base) {
-        const pick = await vscode.window.showWarningMessage(
-          L.conflictMsg(lib, srcf, mbr, now),
-          { modal: true },
-          L.btnOverwrite,
-          L.btnDiff
-        );
+        let pick;
+        if (bulk) {
+          if (bulk.decision === "overwriteAll") pick = L.btnOverwrite;
+          else if (bulk.decision === "skipAll") pick = L.btnSkip;
+          else {
+            pick = await vscode.window.showWarningMessage(
+              L.conflictMsg(lib, srcf, mbr, now),
+              { modal: true },
+              L.btnOverwrite,
+              L.btnOverwriteAll,
+              L.btnSkip,
+              L.btnSkipAll
+            );
+            if (pick === L.btnOverwriteAll) { bulk.decision = "overwriteAll"; pick = L.btnOverwrite; }
+            if (pick === L.btnSkipAll) { bulk.decision = "skipAll"; pick = L.btnSkip; }
+          }
+        } else {
+          pick = await vscode.window.showWarningMessage(
+            L.conflictMsg(lib, srcf, mbr, now),
+            { modal: true },
+            L.btnOverwrite,
+            L.btnDiff
+          );
+        }
         if (pick === L.btnDiff) {
           // Venstre: memberet som det ser ud paa IBM i'en NU. Hoejre: din lokale fil.
           await vscode.commands.executeCommand(
@@ -354,7 +419,7 @@ async function uploadFile(fileUri, kilde) {
     const msg = String((e && e.message) || e);
     if (/readonly mode/i.test(msg)) {
       log(L.readonlyLog);
-      vscode.window.showErrorMessage(L.readonlyMsg);
+      fail(L.readonlyMsg);
       return false;
     }
     log(L.writeFailedRetry(msg));
@@ -364,14 +429,14 @@ async function uploadFile(fileUri, kilde) {
     });
     if (add.code !== 0) {
       log(L.addpfmFailed(add.stderr || add.stdout));
-      vscode.window.showErrorMessage(L.uploadFailed(lib, srcf, mbr, msg));
+      fail(L.uploadFailed(lib, srcf, mbr, msg));
       return false;
     }
     try {
       await tryWrite();
     } catch (e2) {
       log(L.writeFailedRetry((e2 && e2.message) || e2));
-      vscode.window.showErrorMessage(L.uploadFailedAfterCreate(lib, srcf, mbr));
+      fail(L.uploadFailedAfterCreate(lib, srcf, mbr));
       return false;
     }
   }
@@ -384,6 +449,73 @@ async function uploadFile(fileUri, kilde) {
   vscode.window.setStatusBarMessage(L.statusUploaded(lib, srcf, mbr), 4000);
   refreshStatusBar();
   return true;
+}
+
+// Upload af en hel mappe i spejlet: LIB/KILDEFIL (alle members), LIB (alle
+// kildefiler) eller selve spejlroden. De lokale filer er kilden - nye filer
+// bliver til nye members via ADDPFM i uploadFile.
+async function uploadMirrorDir(dirUri) {
+  const scope = explainMirrorDir(dirUri);
+  if (!scope) {
+    vscode.window.showWarningMessage(L.dirNotInMirror(mirrorFolderName()));
+    return;
+  }
+  const ctx = requireConnection();
+  if (!ctx) return;
+  if (!(await checkBinding(scope.root, ctx.conn))) return;
+
+  const label = scope.lib
+    ? scope.srcf ? `${scope.lib}/${scope.srcf}` : scope.lib
+    : path.basename(scope.root.fsPath);
+  const files = await collectMirrorFiles(scope.root, scope.lib, scope.srcf);
+  if (!files.length) {
+    vscode.window.showWarningMessage(L.noLocalFiles(label));
+    return;
+  }
+
+  const go = await vscode.window.showWarningMessage(
+    L.uploadDirConfirm(files.length, label, connName(ctx.conn)),
+    { modal: true },
+    L.btnUploadAll
+  );
+  if (go !== L.btnUploadAll) return;
+
+  out.show(true);
+  const bulk = { decision: null };
+  const stat = { uploaded: 0, unchanged: 0, failed: 0, cancelled: false };
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: L.uploadingTitle(files.length, label),
+      cancellable: true,
+    },
+    async (progress, token) => {
+      for (const f of files) {
+        if (token.isCancellationRequested) { stat.cancelled = true; break; }
+        const rel = path.relative(scope.root.fsPath, f.fsPath).split(path.sep).join("/");
+        progress.report({ message: rel, increment: 100 / files.length });
+        try {
+          const r = await uploadFile(f, "mappe", bulk);
+          if (r === "unchanged") stat.unchanged++;
+          else if (r) stat.uploaded++;
+          else stat.failed++;
+        } catch (e) {
+          stat.failed++;
+          log(L.uploadDirFileError(rel, (e && e.message) || e));
+        }
+      }
+    }
+  );
+
+  if (stat.cancelled) log(L.bulkCancelled);
+  log(L.uploadDirLog(label, stat.uploaded, stat.unchanged, stat.failed, files.length));
+  const summary = L.uploadDirInfo(label, stat.uploaded, stat.unchanged, stat.failed);
+  if (stat.failed) {
+    const pick = await vscode.window.showWarningMessage(summary, L.btnShowOutput);
+    if (pick === L.btnShowOutput) out.show(true);
+  } else {
+    vscode.window.showInformationMessage(summary);
+  }
 }
 
 // ---------------------------------------------------------------- compile
@@ -654,6 +786,34 @@ function activate(context) {
       await editor.document.save();
       out.show(true);
       await uploadFile(editor.document.uri, "manuel");
+    }),
+
+    // Upload en hel mappe (LIB/KILDEFIL, LIB eller hele spejlet).
+    // Fra Explorer-hoejreklik kommer mappens uri; fra paletten bruges den
+    // aktive fils mappe, ellers spoerges der om BIBLIOTEK/KILDEFIL.
+    vscode.commands.registerCommand("bridgeForI.uploadFolder", async (uri) => {
+      let dir = uri instanceof vscode.Uri ? uri : undefined;
+      if (!dir) {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && parseMirrorPath(editor.document.uri))
+          dir = vscode.Uri.joinPath(editor.document.uri, "..");
+      }
+      if (!dir) {
+        const root = mirrorRoot();
+        if (!root) { vscode.window.showErrorMessage(L.openFolderFirst); return; }
+        const spec = await vscode.window.showInputBox({
+          prompt: L.uploadDirPrompt,
+          placeHolder: L.pullPlaceholder,
+        });
+        if (!spec) return;
+        const parts = up(spec).split("/").filter(Boolean);
+        if (parts.length < 1 || parts.length > 2) {
+          vscode.window.showErrorMessage(L.uploadDirFormatError);
+          return;
+        }
+        dir = vscode.Uri.joinPath(root, ...parts);
+      }
+      await uploadMirrorDir(dir);
     }),
 
     // VEJ 1: editor-gem (Ctrl+S). Paalidelig paa alle platforme.

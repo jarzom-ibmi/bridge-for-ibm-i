@@ -8,6 +8,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Upload folder to IBM i (all members)**: right-click a folder in the
+  Explorer to upload a whole source file (`ibmi/LIB/SRCFILE`), a whole library
+  (`ibmi/LIB`) or the entire mirror in one go. Unchanged files are skipped, new
+  files become new members (ADDPFM), conflicts are asked once with
+  "Overwrite all" / "Skip all", progress can be cancelled and a summary is
+  shown at the end. Also available from the command palette (uses the active
+  file's folder, or asks `LIB/SRCFILE`).
+
 ### Changed
 - `release.mjs`: clear guidance instead of a stack trace when a git step or the
   push fails (everything before the push is rolled back), `--help`, `vX.Y.Z`

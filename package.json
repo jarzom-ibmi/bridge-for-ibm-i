@@ -53,6 +53,11 @@
         "category": "IBM i Bridge"
       },
       {
+        "command": "bridgeForI.uploadFolder",
+        "title": "%cmd.uploadFolder%",
+        "category": "IBM i Bridge"
+      },
+      {
         "command": "bridgeForI.pullCurrent",
         "title": "%cmd.pullCurrent%",
         "category": "IBM i Bridge"
@@ -68,6 +73,13 @@
         {
           "command": "bridgeForI.openManual",
           "when": "extension == local.bridge-for-i && extensionStatus == installed"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "bridgeForI.uploadFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "claudebridge@1"
         }
       ],
       "view/item/context": [

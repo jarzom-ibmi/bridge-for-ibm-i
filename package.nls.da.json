@@ -5,6 +5,7 @@
   "cmd.pullNode": "Pull til workspace (til AI)",
   "cmd.compile": "Kompilér aktuel fil på IBM i",
   "cmd.uploadCurrent": "Upload aktuel fil til IBM i",
+  "cmd.uploadFolder": "Upload mappe til IBM i (alle members)",
   "cfg.title": "Bridge for IBM i",
   "cfg.targetLibrary": "Målbibliotek ved kompilering (fx MINLIB)",
   "cfg.mirrorFolder": "Mappe i workspacet hvor members spejles",

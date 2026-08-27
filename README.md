@@ -140,6 +140,10 @@ errors itself. You can also ask Claude to explain a member, add a new
 one (it must follow the `ibmi/LIB/SRCFILE/NAME.type` layout, name ≤ 10 chars),
 or search across the pulled sources with its own grep.
 
+If the agent has touched many files at once (or auto-upload was off), right-click
+the folder in the Explorer and choose **Upload folder to IBM i (all members)** —
+it uploads a whole source file or library in one go, skipping unchanged files.
+
 Good practice: run `git init` in the workspace. The member itself has no
 version control — git on the mirror is your history and your undo.
 
@@ -151,6 +155,7 @@ version control — git on the mirror is your history and your undo.
 | Pull to workspace (for AI) *(context menu)* | Same, from Object Browser right-click |
 | IBM i Bridge: Compile current file on IBM i | Save + upload + correct CRT command |
 | IBM i Bridge: Upload current file to IBM i | Manual upload; also a diagnostic |
+| IBM i Bridge: Upload folder to IBM i (all members) | Right-click a folder in the Explorer: `ibmi/LIB/SRCFILE` uploads every member of that source file, `ibmi/LIB` every source file in the library, `ibmi/` the whole mirror. Unchanged files are skipped, new files become new members, conflicts ask once with "Overwrite all" / "Skip all". From the palette it uses the active file's folder, or asks `LIB/SRCFILE` |
 | IBM i Bridge: Pull current file again | Re-download the member, overwriting the local file |
 | IBM i Bridge: Open manual | Opens this guide in a Markdown preview tab — also in the Extensions-list right-click menu and the status bar tooltip |
 
@@ -367,6 +372,11 @@ rette eventuelle fejl. Du kan også bede Claude forklare et member, oprette
 et nyt (skal følge `ibmi/LIB/KILDEFIL/NAVN.type`, navn ≤ 10 tegn) eller søge på
 tværs af de hentede kilder med dens egen grep.
 
+Har agenten rørt mange filer på én gang (eller var auto-upload slået fra), så
+højreklik mappen i Explorer og vælg **Upload mappe til IBM i (alle members)** —
+den uploader en hel kildefil eller et helt bibliotek i én omgang og springer
+uændrede filer over.
+
 Godt håndværk: kør `git init` i workspacet. Selve memberet har ingen
 versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 
@@ -378,6 +388,7 @@ versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 | Pull til workspace (til AI) *(kontekstmenu)* | Samme, fra højreklik i Object Browser |
 | IBM i Bridge: Kompilér aktuel fil på IBM i | Gem + upload + korrekt CRT-kommando |
 | IBM i Bridge: Upload aktuel fil til IBM i | Manuel upload; også diagnose |
+| IBM i Bridge: Upload mappe til IBM i (alle members) | Højreklik en mappe i Explorer: `ibmi/LIB/KILDEFIL` uploader alle members i kildefilen, `ibmi/LIB` alle kildefiler i biblioteket, `ibmi/` hele spejlet. Uændrede filer springes over, nye filer bliver nye members, konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Fra paletten bruges den aktive fils mappe, ellers spørges `LIB/KILDEFIL` |
 | IBM i Bridge: Hent aktuel fil igen | Genhenter memberet og overskriver den lokale fil |
 | IBM i Bridge: Åbn vejledning | Åbner denne vejledning i en Markdown-preview-fane — findes også i højreklik-menuen i Extensions-listen og i statuslinjens tooltip |
 
