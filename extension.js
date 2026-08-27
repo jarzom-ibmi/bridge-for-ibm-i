@@ -340,7 +340,7 @@ async function uploadFile(fileUri, kilde, bulk) {
   const fail = (msg) => { if (bulk) log(msg); else vscode.window.showErrorMessage(msg); };
 
   const bytes = await vscode.workspace.fs.readFile(fileUri);
-  if (lastUpload.get(fileUri.fsPath) === contentHash(bytes)) {
+  if (!(bulk && bulk.force) && lastUpload.get(fileUri.fsPath) === contentHash(bytes)) {
     log(L.unchangedSkip(kilde, lib, srcf, mbr));
     return "unchanged";
   }
@@ -454,9 +454,11 @@ async function uploadFile(fileUri, kilde, bulk) {
 // Upload af en hel mappe i spejlet: LIB/KILDEFIL (alle members), LIB (alle
 // kildefiler) eller selve spejlroden. De lokale filer er kilden - nye filer
 // bliver til nye members via ADDPFM i uploadFile.
-async function uploadMirrorDir(dirUri) {
+async function uploadMirrorDir(dirUri, force) {
+  log(L.uploadDirStart(dirUri.fsPath, !!force));
   const scope = explainMirrorDir(dirUri);
   if (!scope) {
+    log(L.dirNotInMirror(mirrorFolderName()));
     vscode.window.showWarningMessage(L.dirNotInMirror(mirrorFolderName()));
     return;
   }
@@ -468,20 +470,23 @@ async function uploadMirrorDir(dirUri) {
     ? scope.srcf ? `${scope.lib}/${scope.srcf}` : scope.lib
     : path.basename(scope.root.fsPath);
   const files = await collectMirrorFiles(scope.root, scope.lib, scope.srcf);
+  log(L.uploadDirFound(files.length, label));
   if (!files.length) {
     vscode.window.showWarningMessage(L.noLocalFiles(label));
     return;
   }
 
-  const go = await vscode.window.showWarningMessage(
-    L.uploadDirConfirm(files.length, label, connName(ctx.conn)),
-    { modal: true },
-    L.btnUploadAll
-  );
-  if (go !== L.btnUploadAll) return;
+  if (!force) {
+    const go = await vscode.window.showWarningMessage(
+      L.uploadDirConfirm(files.length, label, connName(ctx.conn)),
+      { modal: true },
+      L.btnUploadAll
+    );
+    if (go !== L.btnUploadAll) { log(L.uploadDirDeclined); return; }
+  }
 
   out.show(true);
-  const bulk = { decision: null };
+  const bulk = { decision: null, force: !!force };
   const stat = { uploaded: 0, unchanged: 0, failed: 0, cancelled: false };
   await vscode.window.withProgress(
     {
@@ -513,6 +518,14 @@ async function uploadMirrorDir(dirUri) {
   if (stat.failed) {
     const pick = await vscode.window.showWarningMessage(summary, L.btnShowOutput);
     if (pick === L.btnShowOutput) out.show(true);
+  } else if (!force && !stat.cancelled && stat.uploaded === 0 && stat.unchanged > 0) {
+    // Alt var "uaendret" ifoelge hash-vagten - tilbyd at uploade alligevel,
+    // fx fordi memberet paa systemet er blevet aendret/slettet siden.
+    const pick = await vscode.window.showInformationMessage(
+      L.uploadDirAllUnchanged(label, stat.unchanged),
+      L.btnUploadAnyway
+    );
+    if (pick === L.btnUploadAnyway) await uploadMirrorDir(dirUri, true);
   } else {
     vscode.window.showInformationMessage(summary);
   }
@@ -792,6 +805,13 @@ function activate(context) {
     // Fra Explorer-hoejreklik kommer mappens uri; fra paletten bruges den
     // aktive fils mappe, ellers spoerges der om BIBLIOTEK/KILDEFIL.
     vscode.commands.registerCommand("bridgeForI.uploadFolder", async (uri) => {
+      out.show(true);
+      log(L.uploadFolderInvoked(
+        uri instanceof vscode.Uri ? uri.fsPath
+          : uri && uri.member ? `member ${uri.member.library}/${uri.member.file}(${uri.member.name})`
+          : uri && uri.object ? `object ${uri.object.library}/${uri.object.name}`
+          : uri ? Object.keys(uri).join(",") : "palette"
+      ));
       let dir = uri instanceof vscode.Uri ? uri : undefined;
       // Fra Object Browser: kildefil-node -> spejlets LIB/KILDEFIL-mappe,
       // member-node -> den ene lokale fil.

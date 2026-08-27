@@ -83,6 +83,12 @@ const EN = {
   uploadDirLog: (scope, ok, same, bad, total) => `Folder upload ${scope}: ${ok} uploaded, ${same} unchanged, ${bad} failed/skipped (of ${total})`,
   uploadDirInfo: (scope, ok, same, bad) => `${scope}: ${ok} uploaded, ${same} unchanged${bad ? `, ${bad} failed/skipped` : ""}`,
   btnShowOutput: "Show output",
+  uploadFolderInvoked: (what) => `(folder) upload requested for: ${what}`,
+  uploadDirStart: (p, force) => `(folder) scanning ${p}${force ? " (force: unchanged files too)" : ""}`,
+  uploadDirFound: (n, scope) => `(folder) ${n} local file(s) found under ${scope}`,
+  uploadDirDeclined: "(folder) upload declined by the user",
+  uploadDirAllUnchanged: (scope, n) => `${scope}: nothing uploaded - all ${n} file(s) are unchanged since the last pull/upload.`,
+  btnUploadAnyway: "Upload all anyway",
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
 
 The files in this folder are local copies of source members on an IBM i.
@@ -208,6 +214,12 @@ const DA = {
   uploadDirLog: (scope, ok, same, bad, total) => `Mappe-upload ${scope}: ${ok} uploadet, ${same} uændret, ${bad} fejlet/sprunget over (af ${total})`,
   uploadDirInfo: (scope, ok, same, bad) => `${scope}: ${ok} uploadet, ${same} uændret${bad ? `, ${bad} fejlet/sprunget over` : ""}`,
   btnShowOutput: "Vis output",
+  uploadFolderInvoked: (what) => `(mappe) upload bedt om for: ${what}`,
+  uploadDirStart: (p, force) => `(mappe) gennemgår ${p}${force ? " (force: også uændrede filer)" : ""}`,
+  uploadDirFound: (n, scope) => `(mappe) ${n} lokal(e) fil(er) fundet under ${scope}`,
+  uploadDirDeclined: "(mappe) upload afvist af brugeren",
+  uploadDirAllUnchanged: (scope, n) => `${scope}: intet uploadet - alle ${n} fil(er) er uændrede siden seneste pull/upload.`,
+  btnUploadAnyway: "Upload alle alligevel",
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)
 
 Filerne i denne mappe er lokale kopier af source members på en IBM i.

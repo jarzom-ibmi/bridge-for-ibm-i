@@ -6,6 +6,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Changed
+- Folder upload: when every file is unchanged since the last pull/upload, the
+  summary now offers **Upload all anyway** (bypasses the content-hash guard).
+  The output panel logs what the command received, how many local files it
+  found and why it stopped.
+
 ## [0.10.1] - 2026-08-27
 
 ### Added
