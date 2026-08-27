@@ -6,6 +6,20 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Added
+- **Pull whole library to workspace (for AI)**: right-click a library in the
+  Object Browser (library object or a filter bound to a library) or in the
+  Library List, and every source file with every member is mirrored into
+  `ibmi/LIB/…` in one go, with a cancellable progress bar and a summary. From
+  the palette, *Pull member(s)* now accepts just `LIB` (or `LIB/*`) for the
+  same thing.
+
+### Changed
+- Pull of a source file now has a cancellable progress bar and shares its core
+  with the library pull.
+
 ## [0.10.3] - 2026-08-27
 
 ### Fixed

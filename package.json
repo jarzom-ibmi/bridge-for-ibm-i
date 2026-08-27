@@ -43,6 +43,11 @@
         "category": "IBM i Bridge"
       },
       {
+        "command": "bridgeForI.pullLibrary",
+        "title": "%cmd.pullLibrary%",
+        "category": "IBM i Bridge"
+      },
+      {
         "command": "bridgeForI.compile",
         "title": "%cmd.compile%",
         "category": "IBM i Bridge"
@@ -91,6 +96,16 @@
         {
           "command": "bridgeForI.pullNode",
           "when": "view == objectBrowser && viewItem == SPF",
+          "group": "claudebridge@1"
+        },
+        {
+          "command": "bridgeForI.pullLibrary",
+          "when": "view == objectBrowser && viewItem =~ /^(object\\.lib|filter_library)/",
+          "group": "claudebridge@1"
+        },
+        {
+          "command": "bridgeForI.pullLibrary",
+          "when": "view == libraryListView && viewItem =~ /library/",
           "group": "claudebridge@1"
         },
         {

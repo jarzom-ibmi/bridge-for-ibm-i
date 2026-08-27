@@ -31,7 +31,7 @@ const readme = readFileSync("README.md", "utf8");
 const heads = [...readme.matchAll(/\*\*Version ([\d.]+) ·/g)].map(m => m[1]);
 must(heads.length === 2 && heads.every(v => v === V), `README.md: version i overskrifterne er ${heads} - skal være ${V} begge steder`);
 must(readme.includes(`# ${NAME}`), `README.md: overskriften matcher ikke visningsnavnet "${NAME}"`);
-for (const key of ["cmd.pullNode","cmd.pull","cmd.openManual","cmd.uploadFolder"])
+for (const key of ["cmd.pullNode","cmd.pullLibrary","cmd.pull","cmd.openManual","cmd.uploadFolder"])
   for (const [lang, nls] of [["EN", NLS_EN], ["DA", NLS_DA]])
     must(readme.includes(nls[key]), `README.md: mangler den faktiske ${lang}-titel "${nls[key]}" - dokumentet citerer ikke UI'en korrekt`);
 const lic = readFileSync("LICENSE", "utf8");

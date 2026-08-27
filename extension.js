@@ -274,7 +274,9 @@ async function membersOfSql(conn, lib, srcf, onlyMbr) {
 }
 
 // ---------------------------------------------------------------- pull
-async function pullMembers(lib, srcf, onlyMbr) {
+// Forbindelse + spejlrod + binding (.bridge.json). Returnerer { ctx, root }
+// eller undefined hvis brugeren afviser at knytte spejlet til forbindelsen.
+async function preparePull() {
   const ctx = requireConnection();
   if (!ctx) return;
   const root = mirrorRoot();
@@ -282,7 +284,6 @@ async function pullMembers(lib, srcf, onlyMbr) {
     vscode.window.showErrorMessage(L.openFolderFirst);
     return;
   }
-
   const active = connName(ctx.conn);
   const man = await readManifest(root);
   if (man.connection && man.connection !== active) {
@@ -299,52 +300,137 @@ async function pullMembers(lib, srcf, onlyMbr) {
     log(L.connBound(active));
   }
   refreshStatusBar();
+  return { ctx, root };
+}
 
-  lib = up(lib);
-  srcf = up(srcf);
+// Kernen: henter members i én kildefil til <root>/LIB/KILDEFIL. Fælles for
+// pull af kildefil og pull af helt bibliotek. Returnerer { n, total }.
+async function pullOneFile(ctx, root, lib, srcf, onlyMbr, progress, token, weight) {
   const list = await membersOf(ctx.conn, lib, srcf, onlyMbr && up(onlyMbr));
-  if (!list.length) {
-    vscode.window.showWarningMessage(L.noMembersFound(`${lib}/${srcf}${onlyMbr ? `(${up(onlyMbr)})` : ""}`));
-    return;
-  }
+  if (!list.length) return { n: 0, total: 0 };
 
   const dir = vscode.Uri.joinPath(root, lib, srcf);
   await vscode.workspace.fs.createDirectory(dir);
 
   let n = 0;
+  for (const m of list) {
+    if (token && token.isCancellationRequested) break;
+    const ext = m.type.toLowerCase() || "txt";
+    try {
+      const bytes = await vscode.workspace.fs.readFile(memberUri(lib, srcf, m.name, ext));
+      const local = vscode.Uri.joinPath(dir, `${m.name}.${ext}`);
+      selfWrites.add(local.fsPath);
+      try {
+        await vscode.workspace.fs.writeFile(local, bytes);
+        saveHash(local.fsPath, contentHash(bytes));
+        saveBaseline(local.fsPath, m.ts);
+      } finally {
+        setTimeout(() => selfWrites.delete(local.fsPath), 2500);
+      }
+      n++;
+      progress.report({ message: `${srcf}/${m.name}`, increment: (weight || 100) / list.length });
+    } catch (e) {
+      log(L.pullError(lib, srcf, m.name, e.message || e));
+    }
+  }
+  log(L.pulledLog(n, list.length, dir.fsPath));
+  return { n, total: list.length };
+}
+
+async function pullMembers(lib, srcf, onlyMbr) {
+  const prep = await preparePull();
+  if (!prep) return;
+  const { ctx, root } = prep;
+  lib = up(lib);
+  srcf = up(srcf);
+
+  let res;
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: L.pullingTitle(list.length, lib, srcf),
+      title: L.pullingTitle(lib, srcf),
+      cancellable: true,
     },
-    async (progress) => {
-      for (const m of list) {
-        const ext = m.type.toLowerCase() || "txt";
+    async (progress, token) => {
+      res = await pullOneFile(ctx, root, lib, srcf, onlyMbr, progress, token);
+    }
+  );
+  if (!res.total) {
+    vscode.window.showWarningMessage(L.noMembersFound(`${lib}/${srcf}${onlyMbr ? `(${up(onlyMbr)})` : ""}`));
+    return;
+  }
+  await ensureInstructionFiles(root);
+  vscode.window.showInformationMessage(L.pulledInfo(res.n, path.basename(root.fsPath), lib, srcf));
+}
+
+// Kildefiler (*SRCPF) i et bibliotek: SQL foerst, ellers Code for IBM i's
+// getObjectList (som har sin egen ikke-SQL-vej).
+async function sourceFilesOf(conn, lib) {
+  try {
+    const rows = await conn.runSQL(
+      `select SYSTEM_TABLE_NAME as F from QSYS2.SYSTABLES
+       where SYSTEM_TABLE_SCHEMA = '${lib.replace(/'/g, "''")}' and FILE_TYPE = 'S'
+       order by 1`
+    );
+    return rows.map((r) => up(r.F)).filter(Boolean);
+  } catch (e) {
+    log(L.srcfListSqlFailed((e && e.message) || e));
+    const content = typeof conn.getContent === "function" ? conn.getContent() : undefined;
+    if (!content || typeof content.getObjectList !== "function") throw e;
+    const objs = await content.getObjectList({ library: lib, types: ["*SRCPF"] });
+    return (objs || []).map((o) => up(o.name)).filter(Boolean);
+  }
+}
+
+// Hele biblioteket: alle kildefiler med alle members -> <root>/LIB/...
+async function pullLibrary(lib) {
+  lib = up(lib);
+  log(L.pullLibInvoked(lib));
+  const prep = await preparePull();
+  if (!prep) return;
+  const { ctx, root } = prep;
+
+  const files = await sourceFilesOf(ctx.conn, lib);
+  log(L.pullLibFound(files.length, lib));
+  if (!files.length) {
+    vscode.window.showWarningMessage(L.noSourceFiles(lib));
+    return;
+  }
+  const go = await vscode.window.showWarningMessage(
+    L.pullLibConfirm(files.length, lib, connName(ctx.conn)),
+    { modal: true },
+    L.btnPullAll
+  );
+  if (go !== L.btnPullAll) return;
+
+  out.show(true);
+  const stat = { files: 0, members: 0, total: 0, cancelled: false };
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: L.pullingLibTitle(files.length, lib),
+      cancellable: true,
+    },
+    async (progress, token) => {
+      for (const srcf of files) {
+        if (token.isCancellationRequested) { stat.cancelled = true; break; }
         try {
-          const bytes = await vscode.workspace.fs.readFile(
-            memberUri(lib, srcf, m.name, ext)
-          );
-          const local = vscode.Uri.joinPath(dir, `${m.name}.${ext}`);
-          selfWrites.add(local.fsPath);
-          try {
-            await vscode.workspace.fs.writeFile(local, bytes);
-            saveHash(local.fsPath, contentHash(bytes));
-            saveBaseline(local.fsPath, m.ts);
-          } finally {
-            setTimeout(() => selfWrites.delete(local.fsPath), 2500);
-          }
-          n++;
-          progress.report({ message: m.name, increment: 100 / list.length });
+          const r = await pullOneFile(ctx, root, lib, srcf, undefined, progress, token, 100 / files.length);
+          stat.files++;
+          stat.members += r.n;
+          stat.total += r.total;
         } catch (e) {
-          log(L.pullError(lib, srcf, m.name, e.message || e));
+          log(L.pullError(lib, srcf, "*ALL", (e && e.message) || e));
         }
       }
     }
   );
 
   await ensureInstructionFiles(root);
-  log(L.pulledLog(n, list.length, dir.fsPath));
-  vscode.window.showInformationMessage(L.pulledInfo(n, path.basename(root.fsPath), lib, srcf));
+  if (stat.cancelled) log(L.pullLibCancelled);
+  const msg = L.pullLibInfo(lib, stat.files, files.length, stat.members, stat.total, path.basename(root.fsPath));
+  log(msg);
+  vscode.window.showInformationMessage(msg);
 }
 
 // ---------------------------------------------------------------- upload
@@ -764,12 +850,31 @@ function activate(context) {
       });
       if (!spec) return;
       const parts = up(spec).split("/").filter(Boolean);
-      if (parts.length < 2) {
+      if (parts.length < 1 || parts.length > 3) {
         vscode.window.showErrorMessage(L.pullFormatError);
         return;
       }
       try {
-        await pullMembers(parts[0], parts[1], parts[2]);
+        if (parts.length === 1 || parts[1] === "*") await pullLibrary(parts[0]);
+        else await pullMembers(parts[0], parts[1], parts[2]);
+      } catch (e) {
+        log(L.pullFailed((e && e.stack) || e));
+        vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
+      }
+    }),
+
+    // Helt bibliotek fra Object Browser (objekt *LIB eller filter med bibliotek)
+    // eller Library List. Alle har .library = navnet.
+    vscode.commands.registerCommand("bridgeForI.pullLibrary", async (node) => {
+      let lib = node && (typeof node.library === "string" && node.library
+        || (node.object && node.object.type === "*LIB" && node.object.name)
+        || (node.object && node.object.library));
+      if (!lib) {
+        lib = await vscode.window.showInputBox({ prompt: L.pullLibPrompt, placeHolder: "MYLIB" });
+        if (!lib) return;
+      }
+      try {
+        await pullLibrary(lib);
       } catch (e) {
         log(L.pullFailed((e && e.stack) || e));
         vscode.window.showErrorMessage(L.pullFailed((e && e.message) || e));
