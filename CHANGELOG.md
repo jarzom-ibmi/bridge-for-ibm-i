@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.10.0] - 2026-08-27
 
 ### Added
 - **Upload folder to IBM i (all members)**: right-click a folder in the
