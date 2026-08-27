@@ -155,7 +155,7 @@ version control — git on the mirror is your history and your undo.
 | Pull to workspace (for AI) *(context menu)* | Same, from Object Browser right-click |
 | IBM i Bridge: Compile current file on IBM i | Save + upload + correct CRT command |
 | IBM i Bridge: Upload current file to IBM i | Manual upload; also a diagnostic |
-| IBM i Bridge: Upload folder to IBM i (all members) | Right-click a folder in the Explorer: `ibmi/LIB/SRCFILE` uploads every member of that source file, `ibmi/LIB` every source file in the library, `ibmi/` the whole mirror. Unchanged files are skipped, new files become new members, conflicts ask once with "Overwrite all" / "Skip all". From the palette it uses the active file's folder, or asks `LIB/SRCFILE` |
+| IBM i Bridge: Upload folder to IBM i (all members) | Right-click a folder in the Explorer: `ibmi/LIB/SRCFILE` uploads every member of that source file, `ibmi/LIB` every source file in the library, `ibmi/` the whole mirror. Unchanged files are skipped, new files become new members, conflicts ask once with "Overwrite all" / "Skip all". Also in the Object Browser right-click menu: on a source file it uploads the mirrored folder, on a member just that local file. From the palette it uses the active file's folder, or asks `LIB/SRCFILE` |
 | IBM i Bridge: Pull current file again | Re-download the member, overwriting the local file |
 | IBM i Bridge: Open manual | Opens this guide in a Markdown preview tab — also in the Extensions-list right-click menu and the status bar tooltip |
 
@@ -388,7 +388,7 @@ versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 | Pull til workspace (til AI) *(kontekstmenu)* | Samme, fra højreklik i Object Browser |
 | IBM i Bridge: Kompilér aktuel fil på IBM i | Gem + upload + korrekt CRT-kommando |
 | IBM i Bridge: Upload aktuel fil til IBM i | Manuel upload; også diagnose |
-| IBM i Bridge: Upload mappe til IBM i (alle members) | Højreklik en mappe i Explorer: `ibmi/LIB/KILDEFIL` uploader alle members i kildefilen, `ibmi/LIB` alle kildefiler i biblioteket, `ibmi/` hele spejlet. Uændrede filer springes over, nye filer bliver nye members, konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Fra paletten bruges den aktive fils mappe, ellers spørges `LIB/KILDEFIL` |
+| IBM i Bridge: Upload mappe til IBM i (alle members) | Højreklik en mappe i Explorer: `ibmi/LIB/KILDEFIL` uploader alle members i kildefilen, `ibmi/LIB` alle kildefiler i biblioteket, `ibmi/` hele spejlet. Uændrede filer springes over, nye filer bliver nye members, konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Findes også i Object Browsers højreklik-menu: på en kildefil uploades den spejlede mappe, på et member kun den ene lokale fil. Fra paletten bruges den aktive fils mappe, ellers spørges `LIB/KILDEFIL` |
 | IBM i Bridge: Hent aktuel fil igen | Genhenter memberet og overskriver den lokale fil |
 | IBM i Bridge: Åbn vejledning | Åbner denne vejledning i en Markdown-preview-fane — findes også i højreklik-menuen i Extensions-listen og i statuslinjens tooltip |
 

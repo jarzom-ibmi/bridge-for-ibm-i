@@ -793,6 +793,23 @@ function activate(context) {
     // aktive fils mappe, ellers spoerges der om BIBLIOTEK/KILDEFIL.
     vscode.commands.registerCommand("bridgeForI.uploadFolder", async (uri) => {
       let dir = uri instanceof vscode.Uri ? uri : undefined;
+      // Fra Object Browser: kildefil-node -> spejlets LIB/KILDEFIL-mappe,
+      // member-node -> den ene lokale fil.
+      if (!dir && uri && (uri.member || uri.object)) {
+        const root = mirrorRoot();
+        if (!root) { vscode.window.showErrorMessage(L.openFolderFirst); return; }
+        if (uri.member) {
+          const m = uri.member;
+          const ext = String(m.extension || "txt").toLowerCase();
+          const local = vscode.Uri.joinPath(root, up(m.library), up(m.file), `${up(m.name)}.${ext}`);
+          try { await vscode.workspace.fs.stat(local); }
+          catch { vscode.window.showWarningMessage(L.noLocalFiles(`${up(m.library)}/${up(m.file)}(${up(m.name)})`)); return; }
+          out.show(true);
+          await uploadFile(local, "manuel");
+          return;
+        }
+        dir = vscode.Uri.joinPath(root, up(uri.object.library), up(uri.object.name));
+      }
       if (!dir) {
         const editor = vscode.window.activeTextEditor;
         if (editor && parseMirrorPath(editor.document.uri))
