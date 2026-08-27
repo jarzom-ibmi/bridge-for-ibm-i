@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.12.0] - 2026-08-27
 
 ### Added
 - **Never-delete guard.** Every CL command and SQL statement the bridge sends

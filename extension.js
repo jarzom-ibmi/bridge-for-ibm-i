@@ -899,7 +899,7 @@ function activate(context) {
   for (const [k, v] of Object.entries(context.workspaceState.get("ibmiBridge.hashes", {})))
     lastUpload.set(k, v);
   out = vscode.window.createOutputChannel("IBM i Bridge");
-  log(L.active("v0.11.1"));
+  log(L.active("v0.12.0"));
 
   context.subscriptions.push(
     vscode.commands.registerCommand("bridgeForI.pull", async () => {
