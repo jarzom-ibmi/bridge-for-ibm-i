@@ -100,6 +100,7 @@ const EN = {
   uploadDirAllUnchanged: (scope, n) => `${scope}: nothing uploaded - all ${n} file(s) are unchanged since the last pull/upload.`,
   btnUploadAnyway: "Upload all anyway",
   pullNodeInvoked: (what) => `(pull) requested for ${what}`,
+  guardBlocked: (kind, text) => `GUARD: refused ${kind} - Bridge for IBM i never deletes, clears, renames or moves anything on the IBM i. Blocked: ${text}`,
   pullFailed: (e) => `Pull failed: ${e}`,
   memberListSqlFailed: (e) => `Member list via SQL failed (${e}) - using Code for IBM i's member list instead`,
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
@@ -244,6 +245,7 @@ const DA = {
   uploadDirAllUnchanged: (scope, n) => `${scope}: intet uploadet - alle ${n} fil(er) er uændrede siden seneste pull/upload.`,
   btnUploadAnyway: "Upload alle alligevel",
   pullNodeInvoked: (what) => `(pull) bedt om for ${what}`,
+  guardBlocked: (kind, text) => `VAGT: afviste ${kind} - Bridge for IBM i sletter, tømmer, omdøber eller flytter aldrig noget på IBM i'en. Blokeret: ${text}`,
   pullFailed: (e) => `Pull fejlede: ${e}`,
   memberListSqlFailed: (e) => `Member-liste via SQL fejlede (${e}) - bruger Code for IBM i's egen member-liste i stedet`,
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)

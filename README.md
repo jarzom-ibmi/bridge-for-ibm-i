@@ -218,6 +218,14 @@ quick diagnostic.
 
 ## 9. Limitations & good practice
 
+- **The bridge never deletes anything on the IBM i.** Deleting files or folders
+  in the mirror (`ibmi/…`) only removes the local copy — the members stay
+  untouched; just pull again. This is enforced in code: every CL command and
+  SQL statement the bridge sends goes through a guard that only allows
+  `ADDPFM`, `CRT*`, `RUNSQLSTM` and read-only `SELECT`s, and refuses `RMVM`,
+  `DLT*`, `CLR*`, `DELETE`, `DROP`, renames, moves, `CALL`, `QSH` etc. A refusal
+  is logged and shown as an error. (Note the reverse: a member deleted on the
+  IBM i is re-created by `ADDPFM` if you save its local file again.)
 - The local file is the only undo — **use git** in the mirror folder.
 - If the member changes on the system while mirrored, the conflict guard warns
   you before overwriting - with a *Show differences* option (can be disabled). Use "Pull current file again" to refresh.
@@ -451,6 +459,14 @@ diagnose.
 
 ## 9. Begrænsninger og godt håndværk
 
+- **Broen sletter aldrig noget på IBM i'en.** Sletter du filer eller mapper i
+  spejlet (`ibmi/…`), forsvinder kun den lokale kopi — memberne rører den ikke;
+  pull bare igen. Det er håndhævet i koden: hver CL-kommando og SQL-sætning
+  broen sender går gennem en vagt, der kun tillader `ADDPFM`, `CRT*`,
+  `RUNSQLSTM` og læsende `SELECT`, og afviser `RMVM`, `DLT*`, `CLR*`, `DELETE`,
+  `DROP`, omdøbning, flytning, `CALL`, `QSH` m.m. En afvisning logges og vises som
+  fejl. (Bemærk det omvendte: et member slettet på IBM i'en genoprettes med
+  `ADDPFM`, hvis du gemmer den lokale fil igen.)
 - Den lokale fil er din eneste fortrydelsesmulighed — **brug git** i spejlmappen.
 - Ændres memberet på systemet mens det er spejlet, advarer konfliktvagten før
   overskrivning - med mulighed for at *vise forskellene* (kan slås fra). Brug "Hent aktuel fil igen" til at genopfriske.

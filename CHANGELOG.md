@@ -6,6 +6,17 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Added
+- **Never-delete guard.** Every CL command and SQL statement the bridge sends
+  to the IBM i now passes through `ibmiCommand` / `ibmiSql`, which allow only
+  `ADDPFM`, `CRT*`, `RUNSQLSTM` and read-only `SELECT`/`WITH`/`VALUES`, and
+  refuse `RMVM`, `DLT*`, `CLR*`, `DELETE`, `DROP`, renames, moves, `CALL`,
+  `QSH`, chained statements etc. A refusal is logged and shown as an error.
+  Deleting files in the local mirror has never touched the IBM i (the watcher
+  only listens to change/create); the README now states this explicitly.
+
 ## [0.11.1] - 2026-08-27
 
 ### Changed

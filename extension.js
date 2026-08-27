@@ -76,8 +76,38 @@ async function checkBinding(root, conn) {
   return true;
 }
 
+// ---------------------------------------------------------------- vagt
+// Broen maa ALDRIG slette, toemme, omdoebe eller flytte noget paa IBM i'en.
+// Alt der rammer systemet gaar gennem ibmiCommand/ibmiSql herunder, som kun
+// tillader det broen har brug for (allowlist) og derudover afviser kendte
+// destruktive kommandoer (blocklist) - uanset hvor i koden kaldet kommer fra.
+// Sletning af lokale filer i spejlet paavirker aldrig IBM i'en: watcheren
+// lytter kun paa change/create, og der findes ingen delete-vej.
+const CL_ALLOWED = /^\s*(QSYS\/)?(ADDPFM|CRT[A-Z0-9]+|RUNSQLSTM)\b/i;
+const CL_BLOCKED = /\b(RMVM|DLT[A-Z]*|CLR[A-Z]*|RMVLNK|RMVDIR|RGZPFM|INZPFM|MOVOBJ|RNMOBJ|RNMM|CPYF|CPYSRCF|CHGPFM|QSH|STRQSH|SBMJOB|CALL)\b/i;
+const SQL_ALLOWED = /^\s*(select|with|values)\b/i;
+
+function guardRefuse(kind, text) {
+  const msg = L.guardBlocked(kind, String(text).replace(/\s+/g, " ").slice(0, 200));
+  log(msg);
+  vscode.window.showErrorMessage(msg);
+  return new Error(msg);
+}
+
+async function ibmiCommand(conn, opts) {
+  const cmd = String((opts && opts.command) || "");
+  if (!CL_ALLOWED.test(cmd) || CL_BLOCKED.test(cmd)) throw guardRefuse("CL", cmd);
+  return conn.runCommand(opts);
+}
+
+async function ibmiSql(conn, sql) {
+  const text = String(sql || "");
+  if (!SQL_ALLOWED.test(text) || /;\s*\S/.test(text)) throw guardRefuse("SQL", text);
+  return conn.runSQL(text);
+}
+
 async function memberTimestamp(conn, lib, srcf, mbr) {
-  const rows = await conn.runSQL(
+  const rows = await ibmiSql(conn, 
     `select coalesce(char(LAST_SOURCE_UPDATE_TIMESTAMP), '') as TS
      from QSYS2.SYSPARTITIONSTAT
      where SYSTEM_TABLE_SCHEMA = '${lib.replace(/'/g, "''")}'
@@ -261,7 +291,7 @@ async function membersOfSql(conn, lib, srcf, onlyMbr) {
       ? `and SYSTEM_TABLE_MEMBER like '${pat}'`
       : `and SYSTEM_TABLE_MEMBER = '${pat}'`;
   }
-  const rows = await conn.runSQL(
+  const rows = await ibmiSql(conn, 
     `select SYSTEM_TABLE_MEMBER as M, coalesce(SOURCE_TYPE, 'TXT') as T,
             coalesce(char(LAST_SOURCE_UPDATE_TIMESTAMP), '') as TS
      from QSYS2.SYSPARTITIONSTAT
@@ -396,7 +426,7 @@ async function pullMembers(lib, srcf, onlyMbr) {
 // getObjectList (som har sin egen ikke-SQL-vej).
 async function sourceFilesOf(conn, lib) {
   try {
-    const rows = await conn.runSQL(
+    const rows = await ibmiSql(conn, 
       `select SYSTEM_TABLE_NAME as F from QSYS2.SYSTABLES
        where SYSTEM_TABLE_SCHEMA = '${lib.replace(/'/g, "''")}' and FILE_TYPE = 'S'
        order by 1`
@@ -561,7 +591,7 @@ async function uploadFile(fileUri, kilde, bulk) {
       return false;
     }
     log(L.writeFailedRetry(msg));
-    const add = await ctx.conn.runCommand({
+    const add = await ibmiCommand(ctx.conn, {
       command: `ADDPFM FILE(${lib}/${srcf}) MBR(${mbr}) SRCTYPE(${up(ext)})`,
       environment: "ile",
     });
@@ -721,7 +751,7 @@ async function compileCurrent() {
 
   out.show(true);
   log(`=== ${cmd}`);
-  const res = await ctx.conn.runCommand({ command: cmd, environment: "ile" });
+  const res = await ibmiCommand(ctx.conn, { command: cmd, environment: "ile" });
   if (res.stdout) out.appendLine(res.stdout);
   if (res.stderr) out.appendLine(res.stderr);
   if (res.code === 0) {
