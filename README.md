@@ -2,6 +2,8 @@
 
 **Version 0.12.0 · Author: Glenn Jarzomkowski · License: MIT**
 
+[![Downloads](https://img.shields.io/github/downloads/jarzom-ibmi/bridge-for-ibm-i/total)](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases) [![Latest release](https://img.shields.io/github/v/release/jarzom-ibmi/bridge-for-ibm-i)](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases/latest)
+
 A small VS Code extension that lets AI coding agents (Claude Code, Codex,
 Copilot, …) work with classic IBM i source members (`LIBRARY/SOURCEFILE/MEMBER`) by piggybacking on
 [Code for IBM i](https://codefori.github.io/docs/). Same connection, same CCSID
