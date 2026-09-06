@@ -1,6 +1,6 @@
 # Bridge for IBM i
 
-**Version 0.12.0 · Author: Glenn Jarzomkowski · License: MIT**
+**Version 0.13.0 · Author: Glenn Jarzomkowski · License: MIT**
 
 [![Downloads](https://img.shields.io/github/downloads/jarzom-ibmi/bridge-for-ibm-i/total)](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases) [![Latest release](https://img.shields.io/github/v/release/jarzom-ibmi/bridge-for-ibm-i)](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases/latest)
 
@@ -70,12 +70,12 @@ Key properties:
 
 ## 3. Installation
 
-1. Download `bridge-for-i-0.12.0.vsix` from
+1. Download `bridge-for-i-0.13.0.vsix` from
    [GitHub Releases](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases).
 2. Install it — either from the command line:
 
    ```bash
-   code --install-extension bridge-for-i-0.12.0.vsix
+   code --install-extension bridge-for-i-0.13.0.vsix
    ```
 > **Upgrading from Claude Member Bridge (≤ 0.4.1)?** Uninstall it first — the
 > rename changed the extension ID, and two bridges watching the same mirror
@@ -85,7 +85,7 @@ Key properties:
    or in VS Code: **Extensions panel → "…" menu → Install from VSIX…**
 3. Reload the window (**Developer: Reload Window**).
 4. Verify: **View → Output → "IBM i Bridge"** — the first line must read
-   `Bridge for IBM i v0.12.0 active.`
+   `Bridge for IBM i v0.13.0 active.`
 5. Recommended: **Settings → search "IBM i Bridge" → Target Library**
    = the library you compile into (e.g. `MYLIB`).
 
@@ -230,7 +230,7 @@ Everything starts in **View → Output → "IBM i Bridge"**.
 
 | Symptom | Look for / cause |
 |---|---|
-| Nothing happens on Ctrl+S | Is the first log line v0.12.0? Older versions lacked the save hook. |
+| Nothing happens on Ctrl+S | Is the first log line v0.13.0? Older versions lacked the save hook. |
 | `(save) REJECTED …: wrong depth` | Path must be exactly `ibmi/LIB/SRCFILE/NAME.ext` — three levels |
 | `…not located under any ibmi/ folder` | File saved outside the mirror, or `mirrorFolder` setting differs |
 | `Code for IBM i is not connected` | Connect first; the bridge reuses that connection |
@@ -275,7 +275,7 @@ endorsed by IBM.
 
 # Bridge for IBM i — Komplet vejledning (dansk)
 
-**Version 0.12.0 · Forfatter: Glenn Jarzomkowski · Licens: MIT**
+**Version 0.13.0 · Forfatter: Glenn Jarzomkowski · Licens: MIT**
 
 En lille VS Code-udvidelse der lader AI-agenter (Claude Code, Codex,
 Copilot, …) arbejde med klassiske IBM i source members (`BIBLIOTEK/KILDEFIL/MEMBER`) ved at koble sig direkte på
@@ -338,12 +338,12 @@ Nøgleegenskaber:
 
 ## 3. Installation
 
-1. Hent `bridge-for-i-0.12.0.vsix` fra
+1. Hent `bridge-for-i-0.13.0.vsix` fra
    [GitHub Releases](https://github.com/jarzom-ibmi/bridge-for-ibm-i/releases).
 2. Installér — enten fra kommandolinjen:
 
    ```bash
-   code --install-extension bridge-for-i-0.12.0.vsix
+   code --install-extension bridge-for-i-0.13.0.vsix
    ```
 > **Opgraderer du fra Claude Member Bridge (≤ 0.4.1)?** Afinstallér den først —
 > omdøbningen ændrede extension-ID'et, og to broer på samme spejl ville uploade
@@ -353,7 +353,7 @@ Nøgleegenskaber:
    eller i VS Code: **Extensions-panelet → "…"-menuen → Install from VSIX…**
 3. Genindlæs vinduet (**Developer: Reload Window**).
 4. Verificér: **View → Output → "IBM i Bridge"** — første linje skal sige
-   `Bridge for IBM i v0.12.0 aktiv.`
+   `Bridge for IBM i v0.13.0 aktiv.`
 5. Anbefalet: **Settings → søg "IBM i Bridge" → Target Library**
    = biblioteket du kompilerer til (fx `MINLIB`).
 
@@ -496,7 +496,7 @@ Alt starter i **View → Output → "IBM i Bridge"**.
 
 | Symptom | Kig efter / årsag |
 |---|---|
-| Intet sker ved Ctrl+S | Siger første loglinje v0.12.0? Ældre versioner manglede gem-lytteren. |
+| Intet sker ved Ctrl+S | Siger første loglinje v0.13.0? Ældre versioner manglede gem-lytteren. |
 | `(gem) AFVIST …: forkert dybde` | Stien skal være præcis `ibmi/LIB/KILDEFIL/NAVN.ext` — tre niveauer |
 | `…ligger ikke under nogen ibmi/-mappe` | Filen er gemt udenfor spejlet, eller `mirrorFolder` afviger |
 | `Code for IBM i er ikke forbundet` | Forbind først; broen genbruger den forbindelse |

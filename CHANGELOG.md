@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.13.0] - 2026-09-06
 
 ### Added
 - **"IBM i Bridge" status view** in the Explorer sidebar. Shows what is
