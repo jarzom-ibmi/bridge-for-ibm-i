@@ -76,6 +76,61 @@
         "command": "bridgeForI.openManual",
         "title": "%cmd.openManual%",
         "category": "IBM i Bridge"
+      },
+      {
+        "command": "bridgeForI.uploadPending",
+        "title": "%cmd.uploadPending%",
+        "category": "IBM i Bridge",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "bridgeForI.statusRefresh",
+        "title": "%cmd.statusRefresh%",
+        "category": "IBM i Bridge",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "bridgeForI.showOutput",
+        "title": "%cmd.showOutput%",
+        "category": "IBM i Bridge",
+        "icon": "$(output)"
+      },
+      {
+        "command": "bridgeForI.uploadItem",
+        "title": "%cmd.uploadItem%",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "bridgeForI.diffItem",
+        "title": "%cmd.diffItem%",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "bridgeForI.pullItem",
+        "title": "%cmd.pullItem%",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "bridgeForI.dismissItem",
+        "title": "%cmd.dismissItem%",
+        "icon": "$(close)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "bridgeForI.status",
+          "name": "%view.status%",
+          "contextualTitle": "%view.status%",
+          "icon": "$(plug)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "bridgeForI.status",
+        "contents": "%view.welcome%",
+        "when": "!bridgeForI.hasMirror"
       }
     ],
     "submenus": [
@@ -88,7 +143,16 @@
       "commandPalette": [
         { "command": "bridgeForI.pullMember", "when": "false" },
         { "command": "bridgeForI.pullFile", "when": "false" },
-        { "command": "bridgeForI.pullLibrary", "when": "false" }
+        { "command": "bridgeForI.pullLibrary", "when": "false" },
+        { "command": "bridgeForI.uploadItem", "when": "false" },
+        { "command": "bridgeForI.diffItem", "when": "false" },
+        { "command": "bridgeForI.pullItem", "when": "false" },
+        { "command": "bridgeForI.dismissItem", "when": "false" }
+      ],
+      "view/title": [
+        { "command": "bridgeForI.uploadPending", "when": "view == bridgeForI.status", "group": "navigation@1" },
+        { "command": "bridgeForI.statusRefresh", "when": "view == bridgeForI.status", "group": "navigation@2" },
+        { "command": "bridgeForI.showOutput", "when": "view == bridgeForI.status", "group": "navigation@3" }
       ],
       "bridgeForI.pullSubmenu": [
         {
@@ -120,6 +184,14 @@
         }
       ],
       "view/item/context": [
+        { "command": "bridgeForI.uploadItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "inline@1" },
+        { "command": "bridgeForI.diffItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "inline@2" },
+        { "command": "bridgeForI.pullItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "inline@3" },
+        { "command": "bridgeForI.dismissItem", "when": "view == bridgeForI.status && viewItem =~ /^(conflict|failed)$/", "group": "inline@4" },
+        { "command": "bridgeForI.uploadItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "bridge@1" },
+        { "command": "bridgeForI.diffItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "bridge@2" },
+        { "command": "bridgeForI.pullItem", "when": "view == bridgeForI.status && viewItem =~ /^(pending|conflict|failed)$/", "group": "bridge@3" },
+        { "command": "bridgeForI.dismissItem", "when": "view == bridgeForI.status && viewItem =~ /^(conflict|failed)$/", "group": "bridge@4" },
         {
           "submenu": "bridgeForI.pullSubmenu",
           "when": "view == objectBrowser && viewItem =~ /^(member|SPF|object\\.lib|filter_library)/",

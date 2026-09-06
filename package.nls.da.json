@@ -15,5 +15,14 @@
   "cfg.autoUpload": "Upload automatisk til IBM i når en spejlet fil ændres",
   "cmd.pullCurrent": "Hent aktuel fil igen (overskriv lokal)",
   "cmd.openManual": "Åbn vejledning",
-  "cfg.conflictCheck": "Advar før upload, hvis memberet er ændret på IBM i'en siden dit seneste pull/upload"
+  "cfg.conflictCheck": "Advar før upload, hvis memberet er ændret på IBM i'en siden dit seneste pull/upload",
+  "cmd.uploadPending": "Upload alt der venter",
+  "cmd.statusRefresh": "Opdater statusvisning",
+  "cmd.showOutput": "Vis output",
+  "cmd.uploadItem": "Upload",
+  "cmd.diffItem": "Vis forskelle",
+  "cmd.pullItem": "Hent igen (overskriv lokal)",
+  "cmd.dismissItem": "Fjern fra listen",
+  "view.status": "IBM i Bridge",
+  "view.welcome": "Der er endnu ingen spejlmappe i dette workspace.\n[Pull member(s) til workspace](command:bridgeForI.pull)\nEller højreklik et member, en kildefil eller et bibliotek i Code for IBM i's Object Browser."
 }

@@ -6,6 +6,24 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Added
+- **"IBM i Bridge" status view** in the Explorer sidebar. Shows what is
+  waiting without scrolling the output panel: **Changed locally, not
+  uploaded** (mirrored files whose content differs from the last upload/pull,
+  including files never uploaded), **Conflicts** (uploads refused or cancelled
+  because the member changed on the IBM i) and **Failed uploads** (not
+  connected, wrong connection, `ADDPFM` failure, name too long, ...), plus the
+  **Last compile** result. Clicking an entry opens the file; inline icons
+  offer *Upload*, *Show differences*, *Pull again (overwrite local)* and
+  *Remove from list*. The view title has *Upload everything pending*,
+  *Refresh* and *Show output*. Conflicts, failures and the last compile
+  survive a VS Code restart.
+- Palette command **IBM i Bridge: Upload everything pending** - uploads every
+  changed file and retries every conflict/failure in one go, with the same
+  "Overwrite all" / "Skip all" choice as the folder upload.
+
 ## [0.12.0] - 2026-08-27
 
 ### Added

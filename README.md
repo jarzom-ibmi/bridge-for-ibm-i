@@ -52,6 +52,10 @@ Key properties:
   own.
 - **Fully logged.** Every action and every rejection — with the reason — is
   written to the output panel **"IBM i Bridge"**.
+- **Status view.** An **"IBM i Bridge"** view in the Explorer sidebar lists
+  what is waiting: files changed locally but not uploaded, conflicts, failed
+  uploads and the last compile result — each with upload / diff / pull-again
+  actions, so you never have to scroll the output panel.
 - **Bilingual.** English by default; the UI and log switch to Danish when
   VS Code's display language is Danish.
 
@@ -160,6 +164,27 @@ version control — git on the mirror is your history and your undo.
 | IBM i Bridge: Upload folder to IBM i (all members) | Right-click a folder in the Explorer: `ibmi/LIB/SRCFILE` uploads every member of that source file, `ibmi/LIB` every source file in the library, `ibmi/` the whole mirror. Unchanged files are skipped, new files become new members, conflicts ask once with "Overwrite all" / "Skip all". Also in the Object Browser right-click menu: on a source file it uploads the mirrored folder, on a member just that local file. From the palette it uses the active file's folder, or asks `LIB/SRCFILE` |
 | IBM i Bridge: Pull current file again | Re-download the member, overwriting the local file |
 | IBM i Bridge: Open manual | Opens this guide in a Markdown preview tab — also in the Extensions-list right-click menu and the status bar tooltip |
+| IBM i Bridge: Upload everything pending | Uploads every file listed under *Changed locally, not uploaded* and retries every conflict / failed upload in one go. Conflicts ask once with "Overwrite all" / "Skip all". Also the ⬆ icon in the status view's title |
+| IBM i Bridge: Refresh status view | Rescans the mirror for the status view (normally automatic) |
+
+### The status view
+
+The **IBM i Bridge** view in the Explorer sidebar shows what is waiting, so
+you never have to scroll the output panel:
+
+| Group | Contains |
+|---|---|
+| Changed locally, not uploaded | Mirrored files whose content differs from the last upload/pull — including files that have never been uploaded (e.g. new files from an agent) and edits made while disconnected or with auto-upload off |
+| Conflicts | Uploads refused or cancelled because the member changed on the IBM i after your last pull/upload |
+| Failed uploads | Everything else that went wrong: not connected, wrong connection, `ADDPFM` failure, member name too long, … The reason is shown next to the file |
+| Last compile | ✔ / ✘ with the member and time; click to open `.compile/last.txt` |
+
+Clicking a file opens it. The inline icons on each entry are **Upload**
+(retry now, with the usual conflict check), **Show differences** (IBM i ↔
+local), **Pull again (overwrite local)** and, for conflicts/failures, **Remove
+from list**. The view's title bar has **Upload everything pending**,
+**Refresh** and **Show output**. Conflicts, failures and the last compile
+result survive a VS Code restart; a successful upload removes the entry.
 
 Compile picks the command from the file extension: RPGLE→CRTBNDRPG,
 SQLRPGLE→CRTSQLRPGI, RPG→CRTRPGPGM, CLLE→CRTBNDCL, CLP/CL→CRTCLPGM,
@@ -295,6 +320,10 @@ Nøgleegenskaber:
   `.compile/last.txt`, så AI-agenter selv kan læse fejlene og rette dem.
 - **Fuldt logget.** Enhver handling og enhver afvisning — med årsag — skrives
   i outputpanelet **"IBM i Bridge"**.
+- **Statusvisning.** Et **"IBM i Bridge"**-view i Explorer-sidepanelet viser,
+  hvad der venter: filer ændret lokalt men ikke uploadet, konflikter, fejlede
+  uploads og seneste compile-resultat — hver med upload / diff / hent-igen-
+  handlinger, så du aldrig skal rulle i outputpanelet.
 - **Tosproget.** Engelsk som standard; brugerflade og log skifter til dansk,
   når VS Codes visningssprog er dansk.
 
@@ -401,6 +430,27 @@ versionsstyring — git på spejlet er din historik og din fortrydelsesmulighed.
 | IBM i Bridge: Upload mappe til IBM i (alle members) | Højreklik en mappe i Explorer: `ibmi/LIB/KILDEFIL` uploader alle members i kildefilen, `ibmi/LIB` alle kildefiler i biblioteket, `ibmi/` hele spejlet. Uændrede filer springes over, nye filer bliver nye members, konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Findes også i Object Browsers højreklik-menu: på en kildefil uploades den spejlede mappe, på et member kun den ene lokale fil. Fra paletten bruges den aktive fils mappe, ellers spørges `LIB/KILDEFIL` |
 | IBM i Bridge: Hent aktuel fil igen | Genhenter memberet og overskriver den lokale fil |
 | IBM i Bridge: Åbn vejledning | Åbner denne vejledning i en Markdown-preview-fane — findes også i højreklik-menuen i Extensions-listen og i statuslinjens tooltip |
+| IBM i Bridge: Upload alt der venter | Uploader alle filer under *Ændret lokalt, ikke uploadet* og prøver alle konflikter / fejlede uploads igen i ét hug. Konflikter spørger én gang med "Overskriv alle" / "Spring alle over". Findes også som ⬆-ikon i statusvisningens titellinje |
+| IBM i Bridge: Opdater statusvisning | Gennemgår spejlet igen til statusvisningen (sker normalt automatisk) |
+
+### Statusvisningen
+
+Viewet **IBM i Bridge** i Explorer-sidepanelet viser, hvad der venter, så du
+aldrig skal rulle i outputpanelet:
+
+| Gruppe | Indeholder |
+|---|---|
+| Ændret lokalt, ikke uploadet | Spejlede filer, hvis indhold afviger fra seneste upload/pull — også filer der aldrig er uploadet (fx nye filer fra en agent) og ændringer lavet uden forbindelse eller med auto-upload slået fra |
+| Konflikter | Uploads afvist eller annulleret, fordi memberet er ændret på IBM i'en efter dit seneste pull/upload |
+| Fejlede uploads | Alt andet der gik galt: ikke forbundet, forkert forbindelse, `ADDPFM`-fejl, for langt membernavn, … Årsagen står ud for filen |
+| Seneste compile | ✔ / ✘ med member og tidspunkt; klik åbner `.compile/last.txt` |
+
+Klik på en fil åbner den. Ikonerne ud for hvert punkt er **Upload** (nyt
+forsøg nu, med det sædvanlige konflikttjek), **Vis forskelle** (IBM i ↔
+lokal), **Hent igen (overskriv lokal)** og, for konflikter/fejl, **Fjern fra
+listen**. Viewets titellinje har **Upload alt der venter**, **Opdater** og
+**Vis output**. Konflikter, fejl og seneste compile-resultat overlever en
+genstart af VS Code; en vellykket upload fjerner punktet.
 
 Compile vælger kommando ud fra filendelsen: RPGLE→CRTBNDRPG,
 SQLRPGLE→CRTSQLRPGI, RPG→CRTRPGPGM, CLLE→CRTBNDCL, CLP/CL→CRTCLPGM,

@@ -498,25 +498,44 @@ async function pullLibrary(lib) {
 // filerne i en mappe-upload, saa konfliktvalget "alle" huskes, og fejl kun
 // logges i stedet for at poppe op én gang pr. fil.
 // Returnerer true (uploadet), "unchanged" (sprunget over, uaendret) eller false.
+// Uanset udfald opdateres sidepanel-viewet bagefter (se uploadFileRaw).
 async function uploadFile(fileUri, kilde, bulk) {
+  try {
+    return await uploadFileRaw(fileUri, kilde, bulk);
+  } finally {
+    refreshStatusView();
+  }
+}
+
+async function uploadFileRaw(fileUri, kilde, bulk) {
   const coords = parseMirrorPath(fileUri);
   if (!coords) {
     log(L.outsideMirror(kilde, fileUri.fsPath));
     return false;
   }
   const { lib, srcf, mbr, ext } = coords;
-  const fail = (msg) => { if (bulk) log(msg); else vscode.window.showErrorMessage(msg); };
+  // Enhver afvisning registreres ogsaa i viewet, saa den ikke kun ligger i loggen.
+  const fail = (msg) => {
+    setIssue(fileUri.fsPath, "failed", msg);
+    if (bulk) log(msg); else vscode.window.showErrorMessage(msg);
+  };
 
   const bytes = await vscode.workspace.fs.readFile(fileUri);
   if (!(bulk && bulk.force) && lastUpload.get(fileUri.fsPath) === contentHash(bytes)) {
     log(L.unchangedSkip(kilde, lib, srcf, mbr));
+    clearIssue(fileUri.fsPath);
     return "unchanged";
   }
 
   const ctx = requireConnection();
-  if (!ctx) return false;
+  if (!ctx) { setIssue(fileUri.fsPath, "failed", L.issueNotConnected); return false; }
 
-  if (coords.root && !(await checkBinding(coords.root, ctx.conn))) return false;
+  if (coords.root && !(await checkBinding(coords.root, ctx.conn))) {
+    let bound = "?";
+    try { bound = (await readManifest(coords.root)).connection || "?"; } catch { /* ok */ }
+    setIssue(fileUri.fsPath, "failed", L.issueMismatch(bound));
+    return false;
+  }
 
   if (mbr.length > 10) {
     fail(L.nameTooLong(mbr));
@@ -565,10 +584,12 @@ async function uploadFile(fileUri, kilde, bulk) {
             L.diffTitle(lib, srcf, mbr)
           );
           log(L.conflictDiffOpened(lib, srcf, mbr));
+          setIssue(fileUri.fsPath, "conflict", L.issueDiffOpened(now));
           return false;
         }
         if (pick !== L.btnOverwrite) {
           log(L.conflictCancelled(lib, srcf, mbr));
+          setIssue(fileUri.fsPath, "conflict", L.issueConflict(now));
           return false;
         }
       }
@@ -614,6 +635,7 @@ async function uploadFile(fileUri, kilde, bulk) {
     saveBaseline(fileUri.fsPath, await memberTimestamp(ctx.conn, lib, srcf, mbr));
   } catch { /* baseline er en hjælp, ikke et krav */ }
   log(L.uploadedOk(lib, srcf, mbr));
+  clearIssue(fileUri.fsPath);
   vscode.window.setStatusBarMessage(L.statusUploaded(lib, srcf, mbr), 4000);
   refreshStatusBar();
   return true;
@@ -762,6 +784,7 @@ async function compileCurrent() {
   }
 
   // Skriv resultatet hvor en AI-agent kan laese det og selv lukke loekken.
+  let resultFile;
   if (coords.root) {
     try {
       const dir = vscode.Uri.joinPath(coords.root, ".compile");
@@ -774,11 +797,19 @@ async function compileCurrent() {
         (res.stdout || "") + (res.stderr ? "\n" + res.stderr : "");
       const f = vscode.Uri.joinPath(dir, "last.txt");
       await vscode.workspace.fs.writeFile(f, Buffer.from(body, "utf8"));
+      resultFile = f.fsPath;
       log(L.compileResultWritten(f.fsPath));
     } catch (e) {
       log(String((e && e.message) || e));
     }
   }
+  setLastCompile({
+    ok: res.code === 0,
+    member: `${lib}/${srcf}(${mbr})`,
+    cmd,
+    when: new Date().toISOString(),
+    file: resultFile,
+  });
 }
 
 // ---------------------------------------------------------------- CLAUDE.md
@@ -845,6 +876,240 @@ async function refreshStatusBar() {
   statusItem.show();
 }
 
+// ---------------------------------------------------------------- sidepanel
+// Viewet "IBM i Bridge" i Explorer: hvad venter? Tre grupper plus seneste
+// compile, saa man ikke skal rulle i outputpanelet:
+//   - aendret lokalt, ikke uploadet: filens hash != sidst uploadede/hentede
+//   - konflikter: upload afvist/annulleret fordi memberet er aendret paa hosten
+//   - fejlede uploads: alt andet der gik galt (ikke forbundet, ADDPFM, ...)
+// Konflikter og fejl registreres af uploadFile (setIssue) og forsvinder ved
+// naeste vellykkede upload (clearIssue). Begge dele persisteres pr. workspace.
+let issues = {}; // fsPath -> { kind: "conflict" | "failed", msg, when }
+let lastCompile; // { ok, member, cmd, when, file }
+let statusView;
+
+function persistIssues() {
+  extContext && extContext.workspaceState.update("ibmiBridge.issues", issues);
+}
+function setIssue(fsPath, kind, msg) {
+  issues[fsPath] = { kind, msg: String(msg), when: new Date().toISOString() };
+  persistIssues();
+  refreshStatusView();
+}
+function clearIssue(fsPath) {
+  if (!issues[fsPath]) return;
+  delete issues[fsPath];
+  persistIssues();
+  refreshStatusView();
+}
+function setLastCompile(c) {
+  lastCompile = c;
+  extContext && extContext.workspaceState.update("ibmiBridge.lastCompile", c);
+  refreshStatusView();
+}
+function refreshStatusView() {
+  statusView && statusView.refresh();
+}
+
+// Hash pr. fil med mtime/stoerrelse-cache, saa en gennemgang af hele spejlet
+// kun laeser de filer, der faktisk er roert.
+const hashCache = new Map(); // fsPath -> { mtime, size, hash }
+async function fileHash(uri) {
+  const st = await vscode.workspace.fs.stat(uri);
+  const c = hashCache.get(uri.fsPath);
+  if (c && c.mtime === st.mtime && c.size === st.size) return c.hash;
+  const hash = contentHash(await vscode.workspace.fs.readFile(uri));
+  hashCache.set(uri.fsPath, { mtime: st.mtime, size: st.size, hash });
+  return hash;
+}
+
+// Alle member-filer i spejlet, hvis indhold afviger fra seneste upload/pull -
+// ogsaa filer der aldrig er uploadet (fx nye filer fra en agent). Filer med
+// en registreret konflikt/fejl vises i deres egen gruppe i stedet.
+async function pendingFiles() {
+  const list = [];
+  for (const root of mirrorRoots()) {
+    let files = [];
+    try { files = await collectMirrorFiles(root); } catch { /* spejlet mangler */ }
+    for (const f of files) {
+      if (issues[f.fsPath]) continue;
+      try {
+        if ((await fileHash(f)) !== lastUpload.get(f.fsPath)) list.push(f);
+      } catch { /* filen forsvandt undervejs */ }
+    }
+  }
+  return list;
+}
+
+function memberLabel(uri) {
+  const c = parseMirrorPath(uri);
+  return c ? `${c.lib}/${c.srcf}(${c.mbr})` : path.basename(uri.fsPath);
+}
+function whenText(iso) {
+  try { return new Date(iso).toLocaleString(); } catch { return iso; }
+}
+
+class BridgeStatusProvider {
+  constructor() {
+    this._em = new vscode.EventEmitter();
+    this.onDidChangeTreeData = this._em.event;
+    this._timer = undefined;
+    this.pending = [];
+  }
+  // Debounced: watcheren kan fyre mange gange i traek under en agents skrivning.
+  refresh() {
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => this._em.fire(undefined), 400);
+  }
+  getTreeItem(el) { return el; }
+  async getChildren(el) {
+    if (!el) return this.roots();
+    if (el.group === "pending") return this.pending.map((u) => this.fileItem(u, "pending"));
+    if (el.group === "conflicts") return this.issueItems("conflict");
+    if (el.group === "failed") return this.issueItems("failed");
+    return [];
+  }
+  async roots() {
+    const hasMirror = mirrorRoots().length > 0;
+    vscode.commands.executeCommand("setContext", "bridgeForI.hasMirror", hasMirror);
+    if (!hasMirror) return [];
+    // Glem fejl for filer, der ikke findes laengere (slettet lokalt).
+    for (const p of Object.keys(issues)) {
+      try { await vscode.workspace.fs.stat(vscode.Uri.file(p)); }
+      catch { delete issues[p]; persistIssues(); }
+    }
+    this.pending = await pendingFiles();
+    const count = (kind) => Object.values(issues).filter((i) => i.kind === kind).length;
+    return [
+      this.group("pending", L.viewPending, this.pending.length, "cloud-upload"),
+      this.group("conflicts", L.viewConflicts, count("conflict"), "warning"),
+      this.group("failed", L.viewFailed, count("failed"), "error"),
+      this.compileItem(),
+    ];
+  }
+  group(id, label, n, icon) {
+    const item = new vscode.TreeItem(
+      label,
+      n ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None
+    );
+    item.id = "group:" + id;
+    item.group = id;
+    item.description = n ? String(n) : L.viewNone;
+    item.iconPath = new vscode.ThemeIcon(icon);
+    item.contextValue = "group";
+    return item;
+  }
+  issueItems(kind) {
+    return Object.entries(issues)
+      .filter(([, i]) => i.kind === kind)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([p, i]) => this.fileItem(vscode.Uri.file(p), kind, i));
+  }
+  fileItem(uri, kind, issue) {
+    const label = memberLabel(uri);
+    const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+    item.id = kind + ":" + uri.fsPath;
+    item.resourceUri = uri;
+    item.contextValue = kind;
+    item.command = { command: "vscode.open", title: "", arguments: [uri] };
+    if (issue) {
+      item.description = issue.msg;
+      item.tooltip = L.viewIssueTip(label, issue.msg, whenText(issue.when), uri.fsPath);
+      item.iconPath = new vscode.ThemeIcon(kind === "conflict" ? "warning" : "error");
+    } else {
+      item.tooltip = L.viewPendingTip(label, uri.fsPath);
+      item.iconPath = new vscode.ThemeIcon("cloud-upload");
+    }
+    return item;
+  }
+  compileItem() {
+    const item = new vscode.TreeItem(L.viewCompile, vscode.TreeItemCollapsibleState.None);
+    item.id = "compile";
+    item.contextValue = "compile";
+    const c = lastCompile;
+    if (!c) {
+      item.description = L.viewCompileNone;
+      item.iconPath = new vscode.ThemeIcon("tools");
+      return item;
+    }
+    item.description = c.ok ? L.viewCompileOk(c.member) : L.viewCompileFailed(c.member);
+    item.tooltip = L.viewCompileTip(c.member, c.cmd, whenText(c.when), c.ok);
+    item.iconPath = new vscode.ThemeIcon(c.ok ? "check" : "error");
+    if (c.file) item.command = { command: "vscode.open", title: "", arguments: [vscode.Uri.file(c.file)] };
+    return item;
+  }
+}
+
+// Upload alt der venter: aendrede filer + filer med konflikt/fejl (nyt forsoeg).
+// Konfliktvalget "alle" huskes paa tvaers af filerne som ved mappe-upload.
+async function uploadPending() {
+  const files = await pendingFiles();
+  for (const p of Object.keys(issues)) files.push(vscode.Uri.file(p));
+  if (!files.length) {
+    vscode.window.showInformationMessage(L.uploadPendingNone);
+    return;
+  }
+  out.show(true);
+  const bulk = { decision: null, force: false };
+  const stat = { uploaded: 0, failed: 0 };
+  await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: L.uploadPendingTitle(files.length), cancellable: true },
+    async (progress, token) => {
+      for (const f of files) {
+        if (token.isCancellationRequested) break;
+        progress.report({ message: memberLabel(f), increment: 100 / files.length });
+        try {
+          const r = await uploadFile(f, "manuel", bulk);
+          if (r === true) stat.uploaded++;
+          else if (r !== "unchanged") stat.failed++;
+        } catch (e) {
+          stat.failed++;
+          log(L.uploadDirFileError(memberLabel(f), (e && e.message) || e));
+        }
+      }
+    }
+  );
+  const msg = L.uploadPendingInfo(stat.uploaded, stat.failed);
+  log(msg);
+  if (stat.failed) vscode.window.showWarningMessage(msg);
+  else vscode.window.showInformationMessage(msg);
+}
+
+// Genhent ét member og overskriv den lokale fil (bruges af "Pull current file
+// again" og af viewets pull-ikon). Kaster ved fejl.
+async function rePullFile(fileUri) {
+  const coords = parseMirrorPath(fileUri);
+  if (!coords) {
+    vscode.window.showWarningMessage(L.notInMirrorWarn);
+    return false;
+  }
+  const ctx = requireConnection();
+  if (!ctx) return false;
+  const { lib, srcf, mbr, ext } = coords;
+  if (coords.root && !(await checkBinding(coords.root, ctx.conn))) return false;
+  const bytes = await vscode.workspace.fs.readFile(memberUri(lib, srcf, mbr, ext));
+  selfWrites.add(fileUri.fsPath);
+  try {
+    await vscode.workspace.fs.writeFile(fileUri, bytes);
+    saveHash(fileUri.fsPath, contentHash(bytes));
+    saveBaseline(fileUri.fsPath, await memberTimestamp(ctx.conn, lib, srcf, mbr));
+  } finally {
+    setTimeout(() => selfWrites.delete(fileUri.fsPath), 2500);
+  }
+  clearIssue(fileUri.fsPath);
+  refreshStatusView();
+  log(L.rePulled(lib, srcf, mbr));
+  vscode.window.setStatusBarMessage(L.rePulled(lib, srcf, mbr), 5000);
+  return true;
+}
+
+// Uri fra et view-element (resourceUri) eller fra den aktive editor.
+function itemUri(item) {
+  if (item && item.resourceUri) return item.resourceUri;
+  const editor = vscode.window.activeTextEditor;
+  return editor ? editor.document.uri : undefined;
+}
+
 // ---------------------------------------------------------------- watcher
 // Fanger skrivninger UDENOM editoren (Claude Code skriver direkte paa disken).
 let watchers = [];
@@ -871,6 +1136,7 @@ function rebuildWatcher(context) {
       return;
     }
     if (!parseMirrorPath(uri)) return;
+    refreshStatusView();
     clearTimeout(pending.get(uri.fsPath));
     pending.set(
       uri.fsPath,
@@ -880,12 +1146,15 @@ function rebuildWatcher(context) {
           await uploadFile(uri, "watcher");
         } catch (e) {
           log(L.watcherError(uri.fsPath, e.message || e));
+          setIssue(uri.fsPath, "failed", (e && e.message) || e);
         }
       }, 700)
     );
   };
     w.onDidChange(onDisk);
     w.onDidCreate(onDisk);
+    // Sletning lokalt roerer ALDRIG IBM i'en - den opdaterer kun sidepanelet.
+    w.onDidDelete(() => refreshStatusView());
     context.subscriptions.push(w);
     watchers.push(w);
     log(L.watching(wsf.uri.fsPath + path.sep + folder));
@@ -898,8 +1167,51 @@ function activate(context) {
   baselines = context.workspaceState.get("ibmiBridge.baselines", {});
   for (const [k, v] of Object.entries(context.workspaceState.get("ibmiBridge.hashes", {})))
     lastUpload.set(k, v);
+  issues = context.workspaceState.get("ibmiBridge.issues", {}) || {};
+  lastCompile = context.workspaceState.get("ibmiBridge.lastCompile", undefined);
   out = vscode.window.createOutputChannel("IBM i Bridge");
   log(L.active("v0.12.0"));
+
+  // Sidepanel-viewet "IBM i Bridge" (Explorer) og dets kommandoer.
+  statusView = new BridgeStatusProvider();
+  context.subscriptions.push(
+    vscode.window.createTreeView("bridgeForI.status", { treeDataProvider: statusView, showCollapseAll: false }),
+    vscode.commands.registerCommand("bridgeForI.statusRefresh", () => { hashCache.clear(); refreshStatusView(); }),
+    vscode.commands.registerCommand("bridgeForI.uploadPending", uploadPending),
+    vscode.commands.registerCommand("bridgeForI.uploadItem", async (item) => {
+      const uri = itemUri(item);
+      if (uri) await uploadFile(uri, "manuel");
+    }),
+    vscode.commands.registerCommand("bridgeForI.diffItem", async (item) => {
+      const uri = itemUri(item);
+      const c = uri && parseMirrorPath(uri);
+      if (!c) return;
+      await vscode.commands.executeCommand(
+        "vscode.diff", memberUri(c.lib, c.srcf, c.mbr, c.ext), uri, L.diffTitle(c.lib, c.srcf, c.mbr)
+      );
+    }),
+    vscode.commands.registerCommand("bridgeForI.pullItem", async (item) => {
+      const uri = itemUri(item);
+      if (!uri) return;
+      try { await rePullFile(uri); }
+      catch (e) {
+        log(L.rePullFailed((e && e.message) || e));
+        vscode.window.showErrorMessage(L.rePullFailed((e && e.message) || e));
+      }
+    }),
+    vscode.commands.registerCommand("bridgeForI.dismissItem", (item) => {
+      const uri = itemUri(item);
+      if (!uri || !issues[uri.fsPath]) return;
+      log(L.viewDismissed(memberLabel(uri)));
+      clearIssue(uri.fsPath);
+    }),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("bridgeForI.mirrorFolder") || e.affectsConfiguration("claudeMemberBridge.mirrorFolder"))
+        rebuildWatcher(context);
+      if (e.affectsConfiguration("bridgeForI") || e.affectsConfiguration("claudeMemberBridge"))
+        refreshStatusView();
+    })
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("bridgeForI.pull", async () => {
@@ -965,27 +1277,8 @@ function activate(context) {
     vscode.commands.registerCommand("bridgeForI.pullCurrent", async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
-      const coords = parseMirrorPath(editor.document.uri);
-      if (!coords) {
-        vscode.window.showWarningMessage(L.notInMirrorWarn);
-        return;
-      }
-      const ctx = requireConnection();
-      if (!ctx) return;
-      const { lib, srcf, mbr, ext } = coords;
-      if (coords.root && !(await checkBinding(coords.root, ctx.conn))) return;
       try {
-        const bytes = await vscode.workspace.fs.readFile(memberUri(lib, srcf, mbr, ext));
-        selfWrites.add(editor.document.uri.fsPath);
-        try {
-          await vscode.workspace.fs.writeFile(editor.document.uri, bytes);
-          saveHash(editor.document.uri.fsPath, contentHash(bytes));
-          saveBaseline(editor.document.uri.fsPath, await memberTimestamp(ctx.conn, lib, srcf, mbr));
-        } finally {
-          setTimeout(() => selfWrites.delete(editor.document.uri.fsPath), 2500);
-        }
-        log(L.rePulled(lib, srcf, mbr));
-        vscode.window.setStatusBarMessage(L.rePulled(lib, srcf, mbr), 5000);
+        await rePullFile(editor.document.uri);
       } catch (e) {
         log(L.rePullFailed((e && e.message) || e));
         vscode.window.showErrorMessage(L.rePullFailed((e && e.message) || e));
@@ -1072,10 +1365,11 @@ function activate(context) {
         await uploadFile(doc.uri, "gem");
       } catch (e) {
         log(L.saveError(e.message || e));
+        setIssue(doc.uri.fsPath, "failed", (e && e.message) || e);
       }
     }),
 
-    vscode.workspace.onDidChangeWorkspaceFolders(() => rebuildWatcher(context))
+    vscode.workspace.onDidChangeWorkspaceFolders(() => { rebuildWatcher(context); refreshStatusView(); })
   );
 
   // VEJ 2: filsystem-watcher (fanger Claude Codes direkte skrivninger)
@@ -1115,8 +1409,11 @@ function activate(context) {
   if (instance && typeof instance.subscribe === "function") {
     instance.subscribe(context, "connected", "Bridge for i status bar", refreshStatusBar);
     instance.subscribe(context, "disconnected", "Bridge for i status bar", refreshStatusBar);
+    instance.subscribe(context, "connected", "Bridge for i status view", refreshStatusView);
+    instance.subscribe(context, "disconnected", "Bridge for i status view", refreshStatusView);
   }
   refreshStatusBar();
+  refreshStatusView();
 }
 
 function deactivate() {}

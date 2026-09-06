@@ -15,5 +15,14 @@
   "cfg.autoUpload": "Automatically upload to IBM i when a mirrored file changes",
   "cmd.pullCurrent": "Pull current file again (overwrite local)",
   "cmd.openManual": "Open manual",
+  "cmd.uploadPending": "Upload everything pending",
+  "cmd.statusRefresh": "Refresh status view",
+  "cmd.showOutput": "Show output",
+  "cmd.uploadItem": "Upload",
+  "cmd.diffItem": "Show differences",
+  "cmd.pullItem": "Pull again (overwrite local)",
+  "cmd.dismissItem": "Remove from list",
+  "view.status": "IBM i Bridge",
+  "view.welcome": "No mirror folder in this workspace yet.\n[Pull member(s) to workspace](command:bridgeForI.pull)\nOr right-click a member, source file or library in Code for IBM i's Object Browser.",
   "cfg.conflictCheck": "Before uploading, warn if the member changed on the IBM i since your last pull/upload"
 }

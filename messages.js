@@ -103,6 +103,26 @@ const EN = {
   guardBlocked: (kind, text) => `GUARD: refused ${kind} - Bridge for IBM i never deletes, clears, renames or moves anything on the IBM i. Blocked: ${text}`,
   pullFailed: (e) => `Pull failed: ${e}`,
   memberListSqlFailed: (e) => `Member list via SQL failed (${e}) - using Code for IBM i's member list instead`,
+  // Sidebar view "IBM i Bridge"
+  viewPending: "Changed locally, not uploaded",
+  viewConflicts: "Conflicts",
+  viewFailed: "Failed uploads",
+  viewCompile: "Last compile",
+  viewNone: "none",
+  viewCompileNone: "no compile yet",
+  viewCompileOk: (m) => `✔ ${m}`,
+  viewCompileFailed: (m) => `✘ ${m}`,
+  viewCompileTip: (m, cmd, when, ok) => `${m}: ${ok ? "compiled OK" : "compile FAILED"} at ${when}\n${cmd}\nClick to open .compile/last.txt`,
+  viewPendingTip: (m, p) => `${m} differs from the last upload/pull and is not on the IBM i yet.\n${p}\nClick to open the file; use the upload icon to send it.`,
+  viewIssueTip: (m, msg, when, p) => `${m}: ${msg}\nat ${when}\n${p}`,
+  issueConflict: (when) => `member changed on the IBM i (${when})`,
+  issueNotConnected: "Code for IBM i is not connected",
+  issueMismatch: (bound) => `mirror is bound to "${bound}"`,
+  issueDiffOpened: (when) => `member changed on the IBM i (${when}) - diff opened`,
+  uploadPendingNone: "Nothing to upload - every mirrored file matches its last upload/pull.",
+  uploadPendingTitle: (n) => `Uploading ${n} pending file(s)`,
+  uploadPendingInfo: (ok, bad) => `${ok} uploaded${bad ? `, ${bad} failed/skipped - see the view or the "IBM i Bridge" output` : ""}`,
+  viewDismissed: (m) => `(view) ${m} removed from the list`,
   agentsMd: `# IBM i source members (mirrored via Bridge for IBM i)
 
 The files in this folder are local copies of source members on an IBM i.
@@ -248,6 +268,26 @@ const DA = {
   guardBlocked: (kind, text) => `VAGT: afviste ${kind} - Bridge for IBM i sletter, tømmer, omdøber eller flytter aldrig noget på IBM i'en. Blokeret: ${text}`,
   pullFailed: (e) => `Pull fejlede: ${e}`,
   memberListSqlFailed: (e) => `Member-liste via SQL fejlede (${e}) - bruger Code for IBM i's egen member-liste i stedet`,
+  // Sidepanel-viewet "IBM i Bridge"
+  viewPending: "Ændret lokalt, ikke uploadet",
+  viewConflicts: "Konflikter",
+  viewFailed: "Fejlede uploads",
+  viewCompile: "Seneste compile",
+  viewNone: "ingen",
+  viewCompileNone: "ingen compile endnu",
+  viewCompileOk: (m) => `✔ ${m}`,
+  viewCompileFailed: (m) => `✘ ${m}`,
+  viewCompileTip: (m, cmd, when, ok) => `${m}: ${ok ? "kompileret OK" : "compile FEJLEDE"} kl. ${when}\n${cmd}\nKlik for at åbne .compile/last.txt`,
+  viewPendingTip: (m, p) => `${m} afviger fra seneste upload/pull og ligger endnu ikke på IBM i'en.\n${p}\nKlik for at åbne filen; brug upload-ikonet for at sende den.`,
+  viewIssueTip: (m, msg, when, p) => `${m}: ${msg}\nkl. ${when}\n${p}`,
+  issueConflict: (when) => `memberet er ændret på IBM i'en (${when})`,
+  issueNotConnected: "Code for IBM i er ikke forbundet",
+  issueMismatch: (bound) => `spejlet er knyttet til "${bound}"`,
+  issueDiffOpened: (when) => `memberet er ændret på IBM i'en (${when}) - diff åbnet`,
+  uploadPendingNone: "Intet at uploade - alle spejlede filer svarer til seneste upload/pull.",
+  uploadPendingTitle: (n) => `Uploader ${n} ventende fil(er)`,
+  uploadPendingInfo: (ok, bad) => `${ok} uploadet${bad ? `, ${bad} fejlet/sprunget over - se viewet eller outputpanelet "IBM i Bridge"` : ""}`,
+  viewDismissed: (m) => `(view) ${m} fjernet fra listen`,
   agentsMd: `# IBM i source members (spejlet via Bridge for IBM i)
 
 Filerne i denne mappe er lokale kopier af source members på en IBM i.
