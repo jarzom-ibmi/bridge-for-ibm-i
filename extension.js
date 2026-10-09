@@ -1216,7 +1216,7 @@ function activate(context) {
   issues = context.workspaceState.get("ibmiBridge.issues", {}) || {};
   lastCompile = context.workspaceState.get("ibmiBridge.lastCompile", undefined);
   out = vscode.window.createOutputChannel("IBM i Bridge");
-  log(L.active("v0.13.0"));
+  log(L.active("v0.14.0"));
 
   // Sidepanel-viewet "IBM i Bridge" (Explorer) og dets kommandoer.
   statusView = new BridgeStatusProvider();

@@ -6,7 +6,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
-## [Unreleased]
+## [0.14.0] - 2026-10-09
 
 ### Changed
 - **Faster pull.** Members are now fetched in parallel (6 at a time by
