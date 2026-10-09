@@ -6,6 +6,20 @@ and versions follow [Semantic Versioning](https://semver.org/).
 > Versions 0.4.1 and earlier were published under the name **Claude Member Bridge**.
 
 
+## [Unreleased]
+
+### Changed
+- **Faster pull.** Members are now fetched in parallel (6 at a time by
+  default, new setting `bridgeForI.pullConcurrency`, 1-16). Names with
+  characters other than A-Z, 0-9 and `_` are still fetched one at a time,
+  because Code for IBM i routes them through a shared `QTEMP` file.
+- **Unchanged members are not downloaded again.** If a member's change
+  timestamp equals the one from the last pull/upload and the local file is
+  untouched since, it is skipped - the content is already identical. Local
+  edits are still overwritten as before. The log shows how many were skipped.
+- Hashes and baselines are saved once per source file instead of once per
+  member, which kept large pulls getting slower as they went.
+
 ## [0.13.0] - 2026-09-06
 
 ### Added

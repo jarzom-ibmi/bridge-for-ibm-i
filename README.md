@@ -223,6 +223,7 @@ uploaded your version, so Actions compile exactly what you see.
 | `bridgeForI.mirrorFolder` | `ibmi` | Mirror folder name inside each workspace folder |
 | `bridgeForI.autoUploadOnSave` | `true` | Automatic upload on change |
 | `bridgeForI.conflictCheck` | `true` | Warn before overwriting a member that changed on the host |
+| `bridgeForI.pullConcurrency` | `6` | Members fetched in parallel during pull (1-16; 1 = one at a time) |
 
 ## 8. Troubleshooting
 
@@ -489,6 +490,7 @@ Actions kompilerer præcis det du ser.
 | `bridgeForI.mirrorFolder` | `ibmi` | Spejlmappens navn i hver workspace-mappe |
 | `bridgeForI.autoUploadOnSave` | `true` | Automatisk upload ved ændring |
 | `bridgeForI.conflictCheck` | `true` | Advar før overskrivning af et member der er ændret på systemet |
+| `bridgeForI.pullConcurrency` | `6` | Members der hentes parallelt ved pull (1-16; 1 = ét ad gangen) |
 
 ## 8. Fejlfinding
 

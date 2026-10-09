@@ -32,8 +32,11 @@ let extContext; // til workspaceState
 // Baseline: memberets ændringstidspunkt ved seneste pull/upload, pr. lokal sti.
 // Persisteres, så konfliktvagten også virker efter genstart af VS Code.
 let baselines = {};
-function saveBaseline(fsPath, ts) {
+function saveBaseline(fsPath, ts, defer) {
   if (ts) baselines[fsPath] = ts; else delete baselines[fsPath];
+  if (!defer) flushBaselines();
+}
+function flushBaselines() {
   extContext && extContext.workspaceState.update("ibmiBridge.baselines", baselines);
 }
 
@@ -123,8 +126,13 @@ const selfWrites = new Set();
 // Persisteres, saa en genstart af VS Code ikke udloeser en overfloedig upload
 // (som ville flytte memberets aendringstidspunkt).
 const lastUpload = new Map();
-function saveHash(fsPath, h) {
+// defer: pull gemmer først samlet til sidst (flushHashes) - ellers serialiseres
+// hele tabellen én gang pr. member.
+function saveHash(fsPath, h, defer) {
   lastUpload.set(fsPath, h);
+  if (!defer) flushHashes();
+}
+function flushHashes() {
   extContext && extContext.workspaceState.update(
     "ibmiBridge.hashes",
     Object.fromEntries(lastUpload)
@@ -362,38 +370,76 @@ async function preparePull() {
   return { ctx, root };
 }
 
+// Navne med andet end A-Z 0-9 _ kan ramme Code for IBM i's variant-tegn-vej,
+// som deler QTEMP/QTEMPSRC - de hentes én ad gangen, resten parallelt.
+const PLAIN_NAME = /^[A-Z0-9_]+$/;
+
+// Koerer fn over items med hoejst `limit` samtidige kald.
+async function runPool(items, limit, fn) {
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) await fn(items[next++]);
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+}
+
 // Kernen: henter members i én kildefil til <root>/LIB/KILDEFIL. Fælles for
-// pull af kildefil og pull af helt bibliotek. Returnerer { n, total }.
+// pull af kildefil og pull af helt bibliotek. Returnerer { n, total, skipped }.
+// Members hvis aendringstidspunkt matcher baseline OG hvis lokale fil er
+// uroert siden sidste synk, springes over - indholdet er allerede identisk.
 async function pullOneFile(ctx, root, lib, srcf, onlyMbr, progress, token, weight) {
   const list = await membersOf(ctx.conn, lib, srcf, onlyMbr && up(onlyMbr));
-  if (!list.length) return { n: 0, total: 0 };
+  if (!list.length) return { n: 0, total: 0, skipped: 0 };
 
   const dir = vscode.Uri.joinPath(root, lib, srcf);
   await vscode.workspace.fs.createDirectory(dir);
 
   let n = 0;
-  for (const m of list) {
-    if (token && token.isCancellationRequested) break;
+  let skipped = 0;
+  const step = (weight || 100) / list.length;
+  const one = async (m) => {
+    if (token && token.isCancellationRequested) return;
     const ext = m.type.toLowerCase() || "txt";
+    const local = vscode.Uri.joinPath(dir, `${m.name}.${ext}`);
     try {
+      if (m.ts && baselines[local.fsPath] === m.ts && lastUpload.has(local.fsPath)) {
+        const h = await fileHash(local).catch(() => undefined); // mangler lokalt
+        if (h && h === lastUpload.get(local.fsPath)) {
+          skipped++;
+          n++;
+          progress.report({ message: `${srcf}/${m.name}`, increment: step });
+          return;
+        }
+      }
       const bytes = await vscode.workspace.fs.readFile(memberUri(lib, srcf, m.name, ext));
-      const local = vscode.Uri.joinPath(dir, `${m.name}.${ext}`);
       selfWrites.add(local.fsPath);
       try {
         await vscode.workspace.fs.writeFile(local, bytes);
-        saveHash(local.fsPath, contentHash(bytes));
-        saveBaseline(local.fsPath, m.ts);
+        saveHash(local.fsPath, contentHash(bytes), true);
+        saveBaseline(local.fsPath, m.ts, true);
       } finally {
         setTimeout(() => selfWrites.delete(local.fsPath), 2500);
       }
       n++;
-      progress.report({ message: `${srcf}/${m.name}`, increment: (weight || 100) / list.length });
+      progress.report({ message: `${srcf}/${m.name}`, increment: step });
     } catch (e) {
       log(L.pullError(lib, srcf, m.name, e.message || e));
     }
+  };
+
+  const limit = Math.max(1, Math.min(16, Number(cfg("pullConcurrency", 6)) || 1));
+  const plainFile = PLAIN_NAME.test(lib) && PLAIN_NAME.test(srcf);
+  const fast = plainFile ? list.filter((m) => PLAIN_NAME.test(m.name)) : [];
+  const slow = list.filter((m) => !fast.includes(m));
+  try {
+    await runPool(fast, limit, one);
+    await runPool(slow, 1, one);
+  } finally {
+    flushHashes();
+    flushBaselines();
   }
-  log(L.pulledLog(n, list.length, dir.fsPath));
-  return { n, total: list.length };
+  log(L.pulledLog(n, list.length, dir.fsPath) + (skipped ? ` ${L.pullSkipped(skipped)}` : ""));
+  return { n, total: list.length, skipped };
 }
 
 async function pullMembers(lib, srcf, onlyMbr) {

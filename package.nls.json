@@ -24,5 +24,6 @@
   "cmd.dismissItem": "Remove from list",
   "view.status": "IBM i Bridge",
   "view.welcome": "No mirror folder in this workspace yet.\n[Pull member(s) to workspace](command:bridgeForI.pull)\nOr right-click a member, source file or library in Code for IBM i's Object Browser.",
-  "cfg.conflictCheck": "Before uploading, warn if the member changed on the IBM i since your last pull/upload"
+  "cfg.conflictCheck": "Before uploading, warn if the member changed on the IBM i since your last pull/upload",
+  "cfg.pullConcurrency": "Number of members fetched at the same time during pull (1-16). Higher is faster on a fast connection; 1 fetches one at a time as before."
 }

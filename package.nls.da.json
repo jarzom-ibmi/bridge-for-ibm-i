@@ -16,6 +16,7 @@
   "cmd.pullCurrent": "Hent aktuel fil igen (overskriv lokal)",
   "cmd.openManual": "Åbn vejledning",
   "cfg.conflictCheck": "Advar før upload, hvis memberet er ændret på IBM i'en siden dit seneste pull/upload",
+  "cfg.pullConcurrency": "Antal members der hentes samtidig ved pull (1-16). Højere er hurtigere på en god forbindelse; 1 henter ét ad gangen som før.",
   "cmd.uploadPending": "Upload alt der venter",
   "cmd.statusRefresh": "Opdater statusvisning",
   "cmd.showOutput": "Vis output",
